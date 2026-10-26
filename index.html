@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gestão">
+    <title>Gestão Financeira Pessoal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #111111;
+            --text-sec: #666666;
+            --primary: #000000;
+            --red: #ff3b30;
+            --green: #34c759;
+            --light-gray: #f5f5f5;
+            --border: #eeeeee;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 80px;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .header {
+            padding: 40px 20px 20px 20px; /* Mais espaço no topo para o iPhone */
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            z-index: 10;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            padding: 15px;
+            border-radius: 12px;
+            background: var(--light-gray);
+            text-align: center;
+        }
+
+        .card-saldo {
+            grid-column: span 2;
+            background: var(--primary);
+            color: white;
+        }
+
+        .card-entrada h3 { color: var(--green); margin-top: 5px; }
+        .card-saida h3 { color: var(--red); margin-top: 5px; }
+        .card-saldo h3 { margin-top: 5px; font-size: 24px; }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .form-container {
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .form-container h3 { margin-bottom: 15px; font-size: 18px; }
+        .form-container select, .form-container input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .btn-adicionar {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .cgd-container {
+            text-align: center;
+            padding: 20px;
+            border: 1px dashed #ccc;
+            border-radius: 12px;
+        }
+        .btn-cgd {
+            background: white;
+            border: 2px solid #005A9C;
+            color: #005A9C;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .cgd-info { font-size: 12px; color: var(--text-sec); }
+
+        .objetivo-card {
+            background: var(--light-gray);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        .objetivo-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .progress-bar {
+            background: var(--border);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill { height: 100%; }
+
+        .investimento-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            margin-top: 10px;
+        }
+        .inv-ticker { font-size: 12px; color: var(--text-sec); display: block; }
+        .lucro { color: var(--green); font-weight: bold; }
+
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border);
+            padding-bottom: 20px; /* Espaço para o traço do iPhone */
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 20px 0;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: var(--text-sec);
+            cursor: pointer;
+        }
+        .nav-btn.active {
+            color: var(--primary);
+            font-weight: bold;
+            border-top: 3px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>A Minha Gestão</h1>
+    </header>
+
+    <main id="tab-resumo" class="tab-content active">
+        <div class="dashboard">
+            <div class="card card-entrada">
+                <span>Entradas</span>
+                <h3 id="display-entradas">0,00 €</h3>
+            </div>
+            <div class="card card-saida">
+                <span>Saídas</span>
+                <h3 id="display-saidas">0,00 €</h3>
+            </div>
+            <div class="card card-saldo">
+                <span>Saldo Atual</span>
+                <h3 id="display-saldo">0,00 €</h3>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="graficoBalanco"></canvas>
+        </div>
+
+        <div class="form-container">
+            <h3>Adicionar Registo</h3>
+            <select id="tipo-registo" onchange="atualizarCategorias()">
+                <option value="saida">Saída (-)</option>
+                <option value="entrada">Entrada (+)</option>
+            </select>
+            
+            <select id="categoria-registo"></select>
+            
+            <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 50.00)" step="0.01">
+            <button class="btn-adicionar" onclick="adicionarRegisto()">Guardar Registo</button>
+        </div>
+
+        <div class="cgd-container">
+            <button class="btn-cgd" onclick="simularImportacaoCGD()">Importar Extrato CGD</button>
+            <p class="cgd-info">Importação via ficheiro CSV estará disponível numa futura atualização.</p>
+        </div>
+    </main>
+
+    <main id="tab-objetivos" class="tab-content">
+        <h2>Os Meus Objetivos</h2>
+        
+        <div class="objetivo-card">
+            <div class="objetivo-header">
+                <span>Fundo de Emergência</span>
+                <span>1.500€ / 5.000€</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 30%; background-color: var(--green);"></div>
+            </div>
+        </div>
+
+        <div class="objetivo-card">
+            <div class="objetivo-header">
+                <span>Comprar Material</span>
+                <span>200€ / 800€</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 25%; background-color: var(--primary);"></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="tab-investimentos" class="tab-content">
+        <h2>Investimentos</h2>
+        
+        <div class="investimento-lista">
+            <div class="investimento-item">
+                <div class="inv-info">
+                    <strong>S&P 500 (ETF)</strong>
+                    <span class="inv-ticker">XTB</span>
+                </div>
+                <div class="inv-valor lucro">+ 45,20 € (↑ 8%)</div>
+            </div>
+            <div class="investimento-item">
+                <div class="inv-info">
+                    <strong>Ações Apple</strong>
+                    <span class="inv-ticker">eToro</span>
+                </div>
+                <div class="inv-valor lucro">+ 12,50 € (↑ 2%)</div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="nav-bar">
+        <button class="nav-btn active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">Resumo</button>
+        <button class="nav-btn" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">Objetivos</button>
+        <button class="nav-btn" data-target="tab-investimentos" onclick="mudarTab('tab-investimentos')">Invest.</button>
+    </nav>
+
+    <script>
+        let totalEntradas = 2100.00;
+        let totalSaidas = 850.00;
+
+        function mudarTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.nav-btn[data-target="${tabId}"]`).classList.add('active');
+        }
+
+        const categoriasSaida = ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Lazer'];
+        const categoriasEntrada = ['Salário', 'Recibos Verdes / Serviços', 'Investimentos', 'Outros'];
+
+        function atualizarCategorias() {
+            const tipo = document.getElementById('tipo-registo').value;
+            const selectCat = document.getElementById('categoria-registo');
+            selectCat.innerHTML = '';
+            const lista = tipo === 'saida' ? categoriasSaida : categoriasEntrada;
+            lista.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.innerText = cat;
+                selectCat.appendChild(option);
+            });
+        }
+        
+        let chart;
+        function inicializarGrafico() {
+            const ctx = document.getElementById('graficoBalanco').getContext('2d');
+            const disponivel = Math.max(0, totalEntradas - totalSaidas);
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Despesas', 'Disponível'],
+                    datasets: [{
+                        data: [totalSaidas, disponivel],
+                        backgroundColor: ['#ff3b30', '#34c759'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function atualizarValoresNoEcra() {
+            document.getElementById('display-entradas').innerText = totalEntradas.toFixed(2) + ' €';
+            document.getElementById('display-saidas').innerText = totalSaidas.toFixed(2) + ' €';
+            const saldo = totalEntradas - totalSaidas;
+            document.getElementById('display-saldo').innerText = saldo.toFixed(2) + ' €';
+            if (chart) {
+                chart.data.datasets[0].data = [totalSaidas, Math.max(0, totalEntradas - totalSaidas)];
+                chart.update();
+            }
+        }
+
+        function adicionarRegisto() {
+            const valor = parseFloat(document.getElementById('valor-registo').value);
+            const tipo = document.getElementById('tipo-registo').value;
+            if (isNaN(valor) || valor <= 0) {
+                alert("Por favor, insere um valor válido.");
+                return;
+            }
+            if (tipo === 'saida') totalSaidas += valor;
+            else totalEntradas += valor;
+            
+            atualizarValoresNoEcra();
+            document.getElementById('valor-registo').value = '';
+        }
+
+        function simularImportacaoCGD() {
+            alert("A importação será ativada quando conectares o ficheiro CSV da CGD.");
+        }
+
+        window.onload = function() {
+            atualizarCategorias();
+            inicializarGrafico();
+            atualizarValoresNoEcra();
+            const dataUltimoAcesso = localStorage.getItem('ultimoAcessoGestao');
+            const hoje = new Date().toDateString();
+            if (dataUltimoAcesso !== hoje) {
+                setTimeout(() => {
+                    alert("Não te esqueças de registar os teus gastos de hoje!");
+                    localStorage.setItem('ultimoAcessoGestao', hoje);
+                }, 1000);
+            }
+        };
+
+        let toqueInicioX = 0;
+        let toqueFimX = 0;
+        document.body.addEventListener('touchstart', e => { toqueInicioX = e.changedTouches[0].screenX; });
+        document.body.addEventListener('touchend', e => { 
+            toqueFimX = e.changedTouches[0].screenX; 
+            const minSwipeDistance = 50; 
+            const tabs = ['tab-resumo', 'tab-objetivos', 'tab-investimentos'];
+            let indiceAtual = tabs.indexOf(document.querySelector('.tab-content.active').id);
+            if (toqueFimX < toqueInicioX - minSwipeDistance && indiceAtual < 2) mudarTab(tabs[indiceAtual + 1]);
+            if (toqueFimX > toqueInicioX + minSwipeDistance && indiceAtual > 0) mudarTab(tabs[indiceAtual - 1]);
+        });
+    </script>
+</body>
+</html>
