@@ -2,186 +2,243 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Adicionado viewport-fit=cover para respeitar o ecrã inteiro do iPhone -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Gestão">
     <title>Gestão Financeira Pessoal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #ffffff;
-            --text-main: #111111;
-            --text-sec: #666666;
-            --primary: #000000;
+            --bg-app: #f2f2f7; /* Cor de fundo nativa do iOS */
+            --text-main: #1c1c1e;
+            --text-sec: #8e8e93;
+            --primary: #007aff; /* Azul iOS */
             --red: #ff3b30;
             --green: #34c759;
-            --light-gray: #f5f5f5;
-            --border: #eeeeee;
+            --light-gray: #f2f2f7;
+            --border: #e5e5ea;
+            --card-bg: #ffffff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
-        /* Fundo do PC cinzento, app centrada estilo telemóvel */
-        body { background-color: #e5e5ea; display: flex; justify-content: center; }
+        /* O truque para não haver scroll na página inteira, apenas dentro da app */
+        html, body { height: 100%; overflow: hidden; background-color: var(--bg-app); display: flex; justify-content: center; }
         
         .app-wrapper {
             width: 100%;
-            max-width: 430px; /* Tamanho base iPhone */
+            max-width: 430px;
+            height: 100dvh; /* Usa a altura real do ecrã do telemóvel */
             background-color: var(--bg-color);
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Divide a app em Cima, Meio (scroll), Baixo */
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
             position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            padding-bottom: 80px;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
         }
 
+        /* 1. CABEÇALHO (Fixo no topo) */
         .header {
-            padding: 50px 20px 20px 20px;
+            flex-shrink: 0;
+            padding: max(20px, env(safe-area-inset-top)) 20px 10px 20px;
+            background: var(--bg-color);
             text-align: center;
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            background: var(--bg-color);
             z-index: 10;
         }
         
+        .header h1 { font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        
         .month-selector {
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
             background-color: var(--light-gray);
-            width: 100%;
+            color: var(--primary);
+            text-align: center;
         }
 
-        .tab-content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        /* 2. ÁREA DE CONTEÚDO (Onde fazes scroll) */
+        .scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: var(--bg-app);
+            -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.2s ease; }
         .tab-content.active { display: block; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilos dos Cartões */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .card { padding: 12px; border-radius: 14px; background: var(--card-bg); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-saldo { grid-column: span 2; background: #000; color: white; padding: 15px;}
+        .card-saldo span { font-size: 13px; opacity: 0.8; }
+        .card span { font-size: 12px; font-weight: 500; color: var(--text-sec); }
+        .card h3 { font-size: 16px; margin-top: 4px; }
+        .card-entrada h3 { color: var(--green); }
+        .card-saida h3 { color: var(--red); }
+        .card-saldo h3 { margin-top: 4px; font-size: 24px; font-weight: 700; color: white;}
+
+        /* Gráfico Compacto */
+        .chart-container { 
+            background: var(--card-bg); padding: 15px; border-radius: 14px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 15px;
+            height: 200px; display: flex; justify-content: center; align-items: center;
         }
 
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .card { padding: 15px; border-radius: 12px; background: var(--light-gray); text-align: center; }
-        .card-saldo { grid-column: span 2; background: var(--primary); color: white; }
-        .card-entrada h3 { color: var(--green); margin-top: 5px; }
-        .card-saida h3 { color: var(--red); margin-top: 5px; }
-        .card-saldo h3 { margin-top: 5px; font-size: 24px; }
-
-        .chart-container { position: relative; height: 250px; width: 100%; margin-bottom: 30px; }
-
-        .form-container { background: var(--light-gray); padding: 20px; border-radius: 12px; margin-bottom: 30px; }
-        .form-container h3 { margin-bottom: 15px; font-size: 18px; }
+        /* Formulário de Adicionar */
+        .form-container { background: var(--card-bg); padding: 15px; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .form-container h3 { font-size: 16px; margin-bottom: 12px; color: var(--text-main); }
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
         .form-container select, .form-container input {
-            width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: white;
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; background: var(--light-gray); outline: none;
         }
+        
+        .btn-adicionar { width: 100%; padding: 14px; background: var(--text-main); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; }
+        .btn-secundario { background: var(--border); color: var(--text-main); margin-bottom: 10px;}
 
-        .btn-adicionar { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
-        .btn-secundario { background: var(--border); color: var(--text-main); }
-
-        .objetivo-card { background: var(--light-gray); padding: 15px; border-radius: 12px; margin: 15px 0; }
-        .objetivo-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
-        .progress-bar { background: var(--border); height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 10px; }
-        .progress-fill { height: 100%; background-color: var(--primary); transition: width 0.3s; }
+        /* Objetivos & Investimentos */
+        .seccao-titulo { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
+        .objetivo-card, .investimento-item { background: var(--card-bg); padding: 15px; border-radius: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .objetivo-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; font-weight: 600; }
+        .progress-bar { background: var(--light-gray); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .progress-fill { height: 100%; background-color: var(--text-main); transition: width 0.3s; }
+        
         .acoes-obj { display: flex; gap: 10px; }
-        .btn-obj { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .btn-obj-add { background: var(--green); color: white; }
-        .btn-obj-rem { background: var(--red); color: white; }
+        .btn-obj { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .btn-obj-rem { background: #ffebee; color: var(--red); }
+        .btn-obj-add { background: #e8f5e9; color: var(--green); }
 
-        .investimento-item { display: flex; justify-content: space-between; padding: 15px; background: var(--light-gray); border-radius: 12px; margin-bottom: 10px; }
+        .investimento-item { display: flex; justify-content: space-between; align-items: center; }
         .inv-info strong { display: block; font-size: 16px; }
-        .inv-ticker { font-size: 12px; color: var(--text-sec); }
-        .inv-valor { font-weight: bold; font-size: 16px; text-align: right; }
+        .inv-ticker { font-size: 13px; color: var(--text-sec); }
+        .inv-valor { font-weight: 700; font-size: 16px; text-align: right; }
 
-        .nav-bar { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; background: var(--bg-color); border-top: 1px solid var(--border); padding-bottom: 20px; }
-        .nav-btn { flex: 1; padding: 20px 0; border: none; background: none; font-size: 14px; color: var(--text-sec); cursor: pointer; }
-        .nav-btn.active { color: var(--primary); font-weight: bold; border-top: 3px solid var(--primary); }
+        /* 3. MENU INFERIOR (Fixo no fundo, com Safe Area para iPhone) */
+        .nav-bar {
+            flex-shrink: 0;
+            display: flex;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border);
+            padding-bottom: env(safe-area-inset-bottom); /* Espaço para o traço do iPhone */
+            z-index: 10;
+        }
+        
+        .nav-btn {
+            flex: 1; padding: 15px 0; border: none; background: none; 
+            font-size: 12px; font-weight: 500; color: var(--text-sec); cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        
+        .nav-btn.active { color: var(--text-main); font-weight: 700; }
+        .nav-icon { font-size: 20px; }
     </style>
 </head>
 <body>
     <div class="app-wrapper">
+        
+        <!-- CABEÇALHO -->
         <header class="header">
             <h1>A Minha Gestão</h1>
             <input type="month" id="filtro-mes" class="month-selector" onchange="renderizarEcra()">
         </header>
 
-        <!-- SEPARADOR RESUMO -->
-        <main id="tab-resumo" class="tab-content active">
-            <div class="dashboard">
-                <div class="card card-entrada">
-                    <span>Entradas</span>
-                    <h3 id="display-entradas">0,00 €</h3>
+        <!-- ÁREA CENTRAL DE SCROLL -->
+        <main class="scroll-area">
+            
+            <!-- SEPARADOR RESUMO -->
+            <div id="tab-resumo" class="tab-content active">
+                <div class="dashboard">
+                    <div class="card card-entrada">
+                        <span>Entradas</span>
+                        <h3 id="display-entradas">0,00 €</h3>
+                    </div>
+                    <div class="card card-saida">
+                        <span>Saídas</span>
+                        <h3 id="display-saidas">0,00 €</h3>
+                    </div>
+                    <div class="card card-saldo">
+                        <span>Saldo Mensal</span>
+                        <h3 id="display-saldo">0,00 €</h3>
+                    </div>
                 </div>
-                <div class="card card-saida">
-                    <span>Saídas</span>
-                    <h3 id="display-saidas">0,00 €</h3>
+
+                <div class="chart-container">
+                    <canvas id="graficoBalanco"></canvas>
                 </div>
-                <div class="card card-saldo">
-                    <span>Saldo Mensal</span>
-                    <h3 id="display-saldo">0,00 €</h3>
+
+                <div class="form-container">
+                    <h3>Adicionar Registo</h3>
+                    <div class="input-group">
+                        <select id="tipo-registo" onchange="atualizarCategorias()">
+                            <option value="saida">Saída (-)</option>
+                            <option value="entrada">Entrada (+)</option>
+                        </select>
+                        <select id="categoria-registo"></select>
+                    </div>
+                    <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 50.00)" step="0.01" style="margin-bottom: 10px;">
+                    <button class="btn-adicionar" onclick="adicionarRegisto()">Guardar Registo</button>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <canvas id="graficoBalanco"></canvas>
+            <!-- SEPARADOR OBJETIVOS -->
+            <div id="tab-objetivos" class="tab-content">
+                <h2 class="seccao-titulo">Os Meus Objetivos</h2>
+                <div id="lista-objetivos"></div>
+                
+                <button class="btn-adicionar btn-secundario" onclick="mostrarFormObjetivo()">+ Criar Novo Objetivo</button>
+                
+                <div id="form-objetivo" class="form-container" style="display: none;">
+                    <input type="text" id="obj-nome" placeholder="Nome do Objetivo (Ex: Carro)" style="margin-bottom:10px;">
+                    <input type="number" id="obj-alvo" placeholder="Valor Alvo em €" style="margin-bottom:10px;">
+                    <button class="btn-adicionar" onclick="adicionarObjetivo()">Guardar Objetivo</button>
+                </div>
             </div>
 
-            <div class="form-container">
-                <h3>Adicionar Registo</h3>
-                <select id="tipo-registo" onchange="atualizarCategorias()">
-                    <option value="saida">Saída (-)</option>
-                    <option value="entrada">Entrada (+)</option>
-                </select>
-                <select id="categoria-registo"></select>
-                <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 50.00)" step="0.01">
-                <button class="btn-adicionar" onclick="adicionarRegisto()">Guardar Registo</button>
+            <!-- SEPARADOR INVESTIMENTOS -->
+            <div id="tab-investimentos" class="tab-content">
+                <h2 class="seccao-titulo">Portfólio</h2>
+                <div class="card card-saldo" style="margin-bottom: 15px;">
+                    <span>Total Investido</span>
+                    <h3 id="display-investido">0,00 €</h3>
+                </div>
+                
+                <div id="lista-investimentos"></div>
+
+                <button class="btn-adicionar btn-secundario" onclick="mostrarFormInvestimento()">+ Registar Ativo</button>
+                
+                <div id="form-investimento" class="form-container" style="display: none;">
+                    <input type="text" id="inv-nome" placeholder="Nome (Ex: S&P 500)" style="margin-bottom:10px;">
+                    <input type="text" id="inv-plataforma" placeholder="Corretora (Ex: XTB)" style="margin-bottom:10px;">
+                    <input type="number" id="inv-valor" placeholder="Valor Atual em €" style="margin-bottom:10px;">
+                    <button class="btn-adicionar" onclick="adicionarInvestimento()">Guardar Ativo</button>
+                </div>
             </div>
         </main>
 
-        <!-- SEPARADOR OBJETIVOS -->
-        <main id="tab-objetivos" class="tab-content">
-            <h2>Os Meus Objetivos</h2>
-            <div id="lista-objetivos"></div>
-            
-            <button class="btn-adicionar btn-secundario" id="btn-show-obj" onclick="mostrarFormObjetivo()">+ Criar Novo Objetivo</button>
-            
-            <div id="form-objetivo" class="form-container" style="display: none; margin-top: 15px;">
-                <input type="text" id="obj-nome" placeholder="Nome do Objetivo">
-                <input type="number" id="obj-alvo" placeholder="Valor a Atingir (€)">
-                <button class="btn-adicionar" onclick="adicionarObjetivo()">Guardar Objetivo</button>
-            </div>
-        </main>
-
-        <!-- SEPARADOR INVESTIMENTOS -->
-        <main id="tab-investimentos" class="tab-content">
-            <h2>Portfólio (XTB / eToro)</h2>
-            <div class="card card-saldo" style="margin-bottom: 20px; background: var(--text-main);">
-                <span>Total Investido</span>
-                <h3 id="display-investido">0,00 €</h3>
-            </div>
-            
-            <div id="lista-investimentos"></div>
-
-            <button class="btn-adicionar btn-secundario" onclick="mostrarFormInvestimento()">+ Registar Ativo</button>
-            
-            <div id="form-investimento" class="form-container" style="display: none; margin-top: 15px;">
-                <input type="text" id="inv-nome" placeholder="Nome/Ticker (Ex: S&P 500)">
-                <input type="text" id="inv-plataforma" placeholder="Corretora (Ex: XTB)">
-                <input type="number" id="inv-valor" placeholder="Valor Investido (€)">
-                <button class="btn-adicionar" onclick="adicionarInvestimento()">Guardar Ativo</button>
-            </div>
-        </main>
-
+        <!-- MENU INFERIOR FIXO -->
         <nav class="nav-bar">
-            <button class="nav-btn active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">Resumo</button>
-            <button class="nav-btn" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">Objetivos</button>
-            <button class="nav-btn" data-target="tab-investimentos" onclick="mudarTab('tab-investimentos')">Invest.</button>
+            <button class="nav-btn active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">
+                <span class="nav-icon">📊</span>
+                Resumo
+            </button>
+            <button class="nav-btn" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">
+                <span class="nav-icon">🎯</span>
+                Objetivos
+            </button>
+            <button class="nav-btn" data-target="tab-investimentos" onclick="mudarTab('tab-investimentos')">
+                <span class="nav-icon">📈</span>
+                Invest.
+            </button>
         </nav>
     </div>
 
@@ -191,29 +248,18 @@
         let objetivos = JSON.parse(localStorage.getItem('fin_objetivos')) || [];
         let investimentos = JSON.parse(localStorage.getItem('fin_investimentos')) || [];
 
-        // Definição das cores por categoria
         const cores = {
-            'Alimentação': '#ff9500',
-            'Transporte': '#5ac8fa',
-            'Carro': '#8e8e93',
-            'Casa': '#af52de',
-            'Lazer': '#ff2d55',
-            'Disponível': '#34c759'
+            'Alimentação': '#ff9500', 'Transporte': '#5ac8fa', 'Carro': '#8e8e93',
+            'Casa': '#af52de', 'Lazer': '#ff2d55', 'Disponível': '#34c759'
         };
 
         const catSaida = ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Lazer'];
-        const catEntrada = ['Salário', 'Recibos Verdes / Serviços', 'Investimentos', 'Outros'];
+        const catEntrada = ['Salário', 'Recibos Verdes', 'Serviços', 'Outros'];
 
-        // --- INICIALIZAÇÃO ---
         window.onload = function() {
             const hoje = new Date();
-            const mesFormatado = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
-            document.getElementById('filtro-mes').value = mesFormatado;
-            
-            atualizarCategorias();
-            renderizarEcra();
-            renderizarObjetivos();
-            renderizarInvestimentos();
+            document.getElementById('filtro-mes').value = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+            atualizarCategorias(); renderizarEcra(); renderizarObjetivos(); renderizarInvestimentos();
         };
 
         function mudarTab(tabId) {
@@ -227,148 +273,89 @@
             const tipo = document.getElementById('tipo-registo').value;
             const select = document.getElementById('categoria-registo');
             select.innerHTML = '';
-            const lista = tipo === 'saida' ? catSaida : catEntrada;
-            lista.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat; opt.innerText = cat;
-                select.appendChild(opt);
+            (tipo === 'saida' ? catSaida : catEntrada).forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
         }
 
-        // --- LÓGICA DO RESUMO MENSAL ---
         let chart = null;
 
         function renderizarEcra() {
-            const mesSelecionado = document.getElementById('filtro-mes').value; // Ex: "2026-10"
-            let totalEntradas = 0;
-            let totalSaidas = 0;
-            let dadosCategorias = {}; // Para agrupar valores por categoria para o gráfico
+            const mes = document.getElementById('filtro-mes').value;
+            let ent = 0, sai = 0, catDados = {};
+            catSaida.forEach(c => catDados[c] = 0);
 
-            // Inicializar contadores de categorias
-            catSaida.forEach(c => dadosCategorias[c] = 0);
-
-            // Filtrar os registos pelo mês escolhido
             registos.forEach(reg => {
-                if(reg.mes === mesSelecionado) {
-                    if(reg.tipo === 'entrada') {
-                        totalEntradas += reg.valor;
-                    } else {
-                        totalSaidas += reg.valor;
-                        if(dadosCategorias[reg.categoria] !== undefined) {
-                            dadosCategorias[reg.categoria] += reg.valor;
-                        }
-                    }
+                if(reg.mes === mes) {
+                    if(reg.tipo === 'entrada') ent += reg.valor;
+                    else { sai += reg.valor; if(catDados[reg.categoria] !== undefined) catDados[reg.categoria] += reg.valor; }
                 }
             });
 
-            const saldo = totalEntradas - totalSaidas;
-            document.getElementById('display-entradas').innerText = totalEntradas.toFixed(2) + ' €';
-            document.getElementById('display-saidas').innerText = totalSaidas.toFixed(2) + ' €';
-            document.getElementById('display-saldo').innerText = saldo.toFixed(2) + ' €';
+            document.getElementById('display-entradas').innerText = ent.toFixed(2) + ' €';
+            document.getElementById('display-saidas').innerText = sai.toFixed(2) + ' €';
+            document.getElementById('display-saldo').innerText = (ent - sai).toFixed(2) + ' €';
 
-            atualizarGrafico(totalEntradas, totalSaidas, dadosCategorias);
+            atualizarGrafico(ent, sai, catDados);
         }
 
-        function atualizarGrafico(entradas, saidas, dadosCategorias) {
+        function atualizarGrafico(ent, sai, catDados) {
             const ctx = document.getElementById('graficoBalanco').getContext('2d');
-            const disponivel = Math.max(0, entradas - saidas);
+            const disponivel = Math.max(0, ent - sai);
             
-            // Preparar dados para o gráfico com as respetivas cores
-            let labels = [];
-            let valores = [];
-            let coresFundo = [];
-
-            // Adicionar fatias das despesas (apenas as que têm valor > 0)
-            for (let cat in dadosCategorias) {
-                if (dadosCategorias[cat] > 0) {
-                    labels.push(cat);
-                    valores.push(dadosCategorias[cat]);
-                    coresFundo.push(cores[cat] || '#000000');
-                }
-            }
-
-            // Adicionar a fatia "Livre/Disponível"
-            labels.push('Disponível');
-            valores.push(disponivel);
-            coresFundo.push(cores['Disponível']);
+            let lbls = [], vals = [], bg = [];
+            for (let c in catDados) if (catDados[c] > 0) { lbls.push(c); vals.push(catDados[c]); bg.push(cores[c]); }
+            lbls.push('Disponível'); vals.push(disponivel); bg.push(cores['Disponível']);
 
             if (chart) chart.destroy();
-
             chart = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: valores,
-                        backgroundColor: coresFundo,
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '70%',
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-                }
+                data: { labels: lbls, datasets: [{ data: vals, backgroundColor: bg, borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 11} } } } }
             });
         }
 
         function adicionarRegisto() {
             const valor = parseFloat(document.getElementById('valor-registo').value);
-            const tipo = document.getElementById('tipo-registo').value;
-            const categoria = document.getElementById('categoria-registo').value;
-            const mes = document.getElementById('filtro-mes').value;
-
-            if (isNaN(valor) || valor <= 0) return alert("Valor inválido.");
-
-            registos.push({ mes, tipo, categoria, valor });
+            if (isNaN(valor) || valor <= 0) return alert("Insere um valor válido.");
+            registos.push({
+                mes: document.getElementById('filtro-mes').value,
+                tipo: document.getElementById('tipo-registo').value,
+                categoria: document.getElementById('categoria-registo').value,
+                valor: valor
+            });
             localStorage.setItem('fin_registos', JSON.stringify(registos));
-            
             document.getElementById('valor-registo').value = '';
             renderizarEcra();
         }
 
-        // --- LÓGICA DE OBJETIVOS ---
         function mostrarFormObjetivo() { document.getElementById('form-objetivo').style.display = 'block'; }
-
         function adicionarObjetivo() {
             const nome = document.getElementById('obj-nome').value;
             const alvo = parseFloat(document.getElementById('obj-alvo').value);
-            if (!nome || isNaN(alvo) || alvo <= 0) return alert("Preenche os campos corretamente.");
-            
+            if (!nome || isNaN(alvo) || alvo <= 0) return;
             objetivos.push({ id: Date.now(), nome, alvo, atual: 0 });
             localStorage.setItem('fin_objetivos', JSON.stringify(objetivos));
-            document.getElementById('obj-nome').value = '';
-            document.getElementById('obj-alvo').value = '';
-            document.getElementById('form-objetivo').style.display = 'none';
-            renderizarObjetivos();
+            document.getElementById('obj-nome').value = ''; document.getElementById('obj-alvo').value = '';
+            document.getElementById('form-objetivo').style.display = 'none'; renderizarObjetivos();
         }
 
-        function alterarValorObjetivo(id, operacao) {
-            const quantia = parseFloat(prompt(operacao === '+' ? "Quanto queres adicionar ao objetivo?" : "Quanto queres retirar?"));
+        function alterarValorObjetivo(id, op) {
+            const quantia = parseFloat(prompt(op === '+' ? "Adicionar quanto?" : "Retirar quanto?"));
             if (isNaN(quantia) || quantia <= 0) return;
-
             const obj = objetivos.find(o => o.id === id);
-            if (operacao === '+') obj.atual += quantia;
-            else obj.atual = Math.max(0, obj.atual - quantia);
-
-            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos));
-            renderizarObjetivos();
+            obj.atual = op === '+' ? obj.atual + quantia : Math.max(0, obj.atual - quantia);
+            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos)); renderizarObjetivos();
         }
 
         function renderizarObjetivos() {
-            const container = document.getElementById('lista-objetivos');
-            container.innerHTML = '';
+            const container = document.getElementById('lista-objetivos'); container.innerHTML = '';
             objetivos.forEach(obj => {
-                const percentagem = Math.min(100, (obj.atual / obj.alvo) * 100);
+                const perc = Math.min(100, (obj.atual / obj.alvo) * 100);
                 container.innerHTML += `
                     <div class="objetivo-card">
-                        <div class="objetivo-header">
-                            <span>${obj.nome}</span>
-                            <span>${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${percentagem}%"></div>
-                        </div>
+                        <div class="objetivo-header"><span>${obj.nome}</span><span>${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${perc}%"></div></div>
                         <div class="acoes-obj">
                             <button class="btn-obj btn-obj-rem" onclick="alterarValorObjetivo(${obj.id}, '-')">- Retirar</button>
                             <button class="btn-obj btn-obj-add" onclick="alterarValorObjetivo(${obj.id}, '+')">+ Adicionar</button>
@@ -377,41 +364,21 @@
             });
         }
 
-        // --- LÓGICA DE INVESTIMENTOS ---
         function mostrarFormInvestimento() { document.getElementById('form-investimento').style.display = 'block'; }
-
         function adicionarInvestimento() {
-            const nome = document.getElementById('inv-nome').value;
-            const plat = document.getElementById('inv-plataforma').value;
-            const valor = parseFloat(document.getElementById('inv-valor').value);
-            
-            if (!nome || !plat || isNaN(valor) || valor <= 0) return alert("Preenche os campos corretamente.");
-            
+            const nome = document.getElementById('inv-nome').value, plat = document.getElementById('inv-plataforma').value, valor = parseFloat(document.getElementById('inv-valor').value);
+            if (!nome || isNaN(valor) || valor <= 0) return;
             investimentos.push({ nome, plataforma: plat, valor });
             localStorage.setItem('fin_investimentos', JSON.stringify(investimentos));
-            
-            document.getElementById('inv-nome').value = '';
-            document.getElementById('inv-plataforma').value = '';
-            document.getElementById('inv-valor').value = '';
-            document.getElementById('form-investimento').style.display = 'none';
-            renderizarInvestimentos();
+            document.getElementById('inv-nome').value = ''; document.getElementById('inv-plataforma').value = ''; document.getElementById('inv-valor').value = '';
+            document.getElementById('form-investimento').style.display = 'none'; renderizarInvestimentos();
         }
 
         function renderizarInvestimentos() {
-            const container = document.getElementById('lista-investimentos');
-            container.innerHTML = '';
-            let total = 0;
-            
+            const container = document.getElementById('lista-investimentos'); container.innerHTML = ''; let total = 0;
             investimentos.forEach(inv => {
                 total += inv.valor;
-                container.innerHTML += `
-                    <div class="investimento-item">
-                        <div class="inv-info">
-                            <strong>${inv.nome}</strong>
-                            <span class="inv-ticker">${inv.plataforma}</span>
-                        </div>
-                        <div class="inv-valor">${inv.valor.toFixed(2)} €</div>
-                    </div>`;
+                container.innerHTML += `<div class="investimento-item"><div class="inv-info"><strong>${inv.nome}</strong><span class="inv-ticker">${inv.plataforma}</span></div><div class="inv-valor">${inv.valor.toFixed(2)} €</div></div>`;
             });
             document.getElementById('display-investido').innerText = total.toFixed(2) + ' €';
         }
