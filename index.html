@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gestão">
@@ -20,23 +20,25 @@
             --border: #eeeeee;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
-        body {
+        /* Fundo do PC cinzento, app centrada estilo telemóvel */
+        body { background-color: #e5e5ea; display: flex; justify-content: center; }
+        
+        .app-wrapper {
+            width: 100%;
+            max-width: 430px; /* Tamanho base iPhone */
             background-color: var(--bg-color);
-            color: var(--text-main);
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             padding-bottom: 80px;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
         .header {
-            padding: 40px 20px 20px 20px; /* Mais espaço no topo para o iPhone */
+            padding: 50px 20px 20px 20px;
             text-align: center;
             border-bottom: 1px solid var(--border);
             position: sticky;
@@ -44,358 +46,375 @@
             background: var(--bg-color);
             z-index: 10;
         }
+        
+        .month-selector {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            background-color: var(--light-gray);
+            width: 100%;
+        }
 
-        .tab-content {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .card {
-            padding: 15px;
-            border-radius: 12px;
-            background: var(--light-gray);
-            text-align: center;
-        }
-
-        .card-saldo {
-            grid-column: span 2;
-            background: var(--primary);
-            color: white;
-        }
-
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .card { padding: 15px; border-radius: 12px; background: var(--light-gray); text-align: center; }
+        .card-saldo { grid-column: span 2; background: var(--primary); color: white; }
         .card-entrada h3 { color: var(--green); margin-top: 5px; }
         .card-saida h3 { color: var(--red); margin-top: 5px; }
         .card-saldo h3 { margin-top: 5px; font-size: 24px; }
 
-        .chart-container {
-            position: relative;
-            height: 250px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
+        .chart-container { position: relative; height: 250px; width: 100%; margin-bottom: 30px; }
 
-        .form-container {
-            background: var(--light-gray);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-
+        .form-container { background: var(--light-gray); padding: 20px; border-radius: 12px; margin-bottom: 30px; }
         .form-container h3 { margin-bottom: 15px; font-size: 18px; }
         .form-container select, .form-container input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 16px;
-            background: white;
+            width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: white;
         }
 
-        .btn-adicionar {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-        }
+        .btn-adicionar { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
+        .btn-secundario { background: var(--border); color: var(--text-main); }
 
-        .cgd-container {
-            text-align: center;
-            padding: 20px;
-            border: 1px dashed #ccc;
-            border-radius: 12px;
-        }
-        .btn-cgd {
-            background: white;
-            border: 2px solid #005A9C;
-            color: #005A9C;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        .cgd-info { font-size: 12px; color: var(--text-sec); }
+        .objetivo-card { background: var(--light-gray); padding: 15px; border-radius: 12px; margin: 15px 0; }
+        .objetivo-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+        .progress-bar { background: var(--border); height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill { height: 100%; background-color: var(--primary); transition: width 0.3s; }
+        .acoes-obj { display: flex; gap: 10px; }
+        .btn-obj { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .btn-obj-add { background: var(--green); color: white; }
+        .btn-obj-rem { background: var(--red); color: white; }
 
-        .objetivo-card {
-            background: var(--light-gray);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-        }
-        .objetivo-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-        .progress-bar {
-            background: var(--border);
-            height: 10px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .progress-fill { height: 100%; }
+        .investimento-item { display: flex; justify-content: space-between; padding: 15px; background: var(--light-gray); border-radius: 12px; margin-bottom: 10px; }
+        .inv-info strong { display: block; font-size: 16px; }
+        .inv-ticker { font-size: 12px; color: var(--text-sec); }
+        .inv-valor { font-weight: bold; font-size: 16px; text-align: right; }
 
-        .investimento-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            margin-top: 10px;
-        }
-        .inv-ticker { font-size: 12px; color: var(--text-sec); display: block; }
-        .lucro { color: var(--green); font-weight: bold; }
-
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            background: var(--bg-color);
-            border-top: 1px solid var(--border);
-            padding-bottom: 20px; /* Espaço para o traço do iPhone */
-        }
-
-        .nav-btn {
-            flex: 1;
-            padding: 20px 0;
-            border: none;
-            background: none;
-            font-size: 14px;
-            color: var(--text-sec);
-            cursor: pointer;
-        }
-        .nav-btn.active {
-            color: var(--primary);
-            font-weight: bold;
-            border-top: 3px solid var(--primary);
-        }
+        .nav-bar { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; background: var(--bg-color); border-top: 1px solid var(--border); padding-bottom: 20px; }
+        .nav-btn { flex: 1; padding: 20px 0; border: none; background: none; font-size: 14px; color: var(--text-sec); cursor: pointer; }
+        .nav-btn.active { color: var(--primary); font-weight: bold; border-top: 3px solid var(--primary); }
     </style>
 </head>
 <body>
+    <div class="app-wrapper">
+        <header class="header">
+            <h1>A Minha Gestão</h1>
+            <input type="month" id="filtro-mes" class="month-selector" onchange="renderizarEcra()">
+        </header>
 
-    <header class="header">
-        <h1>A Minha Gestão</h1>
-    </header>
-
-    <main id="tab-resumo" class="tab-content active">
-        <div class="dashboard">
-            <div class="card card-entrada">
-                <span>Entradas</span>
-                <h3 id="display-entradas">0,00 €</h3>
-            </div>
-            <div class="card card-saida">
-                <span>Saídas</span>
-                <h3 id="display-saidas">0,00 €</h3>
-            </div>
-            <div class="card card-saldo">
-                <span>Saldo Atual</span>
-                <h3 id="display-saldo">0,00 €</h3>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <canvas id="graficoBalanco"></canvas>
-        </div>
-
-        <div class="form-container">
-            <h3>Adicionar Registo</h3>
-            <select id="tipo-registo" onchange="atualizarCategorias()">
-                <option value="saida">Saída (-)</option>
-                <option value="entrada">Entrada (+)</option>
-            </select>
-            
-            <select id="categoria-registo"></select>
-            
-            <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 50.00)" step="0.01">
-            <button class="btn-adicionar" onclick="adicionarRegisto()">Guardar Registo</button>
-        </div>
-
-        <div class="cgd-container">
-            <button class="btn-cgd" onclick="simularImportacaoCGD()">Importar Extrato CGD</button>
-            <p class="cgd-info">Importação via ficheiro CSV estará disponível numa futura atualização.</p>
-        </div>
-    </main>
-
-    <main id="tab-objetivos" class="tab-content">
-        <h2>Os Meus Objetivos</h2>
-        
-        <div class="objetivo-card">
-            <div class="objetivo-header">
-                <span>Fundo de Emergência</span>
-                <span>1.500€ / 5.000€</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 30%; background-color: var(--green);"></div>
-            </div>
-        </div>
-
-        <div class="objetivo-card">
-            <div class="objetivo-header">
-                <span>Comprar Material</span>
-                <span>200€ / 800€</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 25%; background-color: var(--primary);"></div>
-            </div>
-        </div>
-    </main>
-
-    <main id="tab-investimentos" class="tab-content">
-        <h2>Investimentos</h2>
-        
-        <div class="investimento-lista">
-            <div class="investimento-item">
-                <div class="inv-info">
-                    <strong>S&P 500 (ETF)</strong>
-                    <span class="inv-ticker">XTB</span>
+        <!-- SEPARADOR RESUMO -->
+        <main id="tab-resumo" class="tab-content active">
+            <div class="dashboard">
+                <div class="card card-entrada">
+                    <span>Entradas</span>
+                    <h3 id="display-entradas">0,00 €</h3>
                 </div>
-                <div class="inv-valor lucro">+ 45,20 € (↑ 8%)</div>
-            </div>
-            <div class="investimento-item">
-                <div class="inv-info">
-                    <strong>Ações Apple</strong>
-                    <span class="inv-ticker">eToro</span>
+                <div class="card card-saida">
+                    <span>Saídas</span>
+                    <h3 id="display-saidas">0,00 €</h3>
                 </div>
-                <div class="inv-valor lucro">+ 12,50 € (↑ 2%)</div>
+                <div class="card card-saldo">
+                    <span>Saldo Mensal</span>
+                    <h3 id="display-saldo">0,00 €</h3>
+                </div>
             </div>
-        </div>
-    </main>
 
-    <nav class="nav-bar">
-        <button class="nav-btn active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">Resumo</button>
-        <button class="nav-btn" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">Objetivos</button>
-        <button class="nav-btn" data-target="tab-investimentos" onclick="mudarTab('tab-investimentos')">Invest.</button>
-    </nav>
+            <div class="chart-container">
+                <canvas id="graficoBalanco"></canvas>
+            </div>
+
+            <div class="form-container">
+                <h3>Adicionar Registo</h3>
+                <select id="tipo-registo" onchange="atualizarCategorias()">
+                    <option value="saida">Saída (-)</option>
+                    <option value="entrada">Entrada (+)</option>
+                </select>
+                <select id="categoria-registo"></select>
+                <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 50.00)" step="0.01">
+                <button class="btn-adicionar" onclick="adicionarRegisto()">Guardar Registo</button>
+            </div>
+        </main>
+
+        <!-- SEPARADOR OBJETIVOS -->
+        <main id="tab-objetivos" class="tab-content">
+            <h2>Os Meus Objetivos</h2>
+            <div id="lista-objetivos"></div>
+            
+            <button class="btn-adicionar btn-secundario" id="btn-show-obj" onclick="mostrarFormObjetivo()">+ Criar Novo Objetivo</button>
+            
+            <div id="form-objetivo" class="form-container" style="display: none; margin-top: 15px;">
+                <input type="text" id="obj-nome" placeholder="Nome do Objetivo">
+                <input type="number" id="obj-alvo" placeholder="Valor a Atingir (€)">
+                <button class="btn-adicionar" onclick="adicionarObjetivo()">Guardar Objetivo</button>
+            </div>
+        </main>
+
+        <!-- SEPARADOR INVESTIMENTOS -->
+        <main id="tab-investimentos" class="tab-content">
+            <h2>Portfólio (XTB / eToro)</h2>
+            <div class="card card-saldo" style="margin-bottom: 20px; background: var(--text-main);">
+                <span>Total Investido</span>
+                <h3 id="display-investido">0,00 €</h3>
+            </div>
+            
+            <div id="lista-investimentos"></div>
+
+            <button class="btn-adicionar btn-secundario" onclick="mostrarFormInvestimento()">+ Registar Ativo</button>
+            
+            <div id="form-investimento" class="form-container" style="display: none; margin-top: 15px;">
+                <input type="text" id="inv-nome" placeholder="Nome/Ticker (Ex: S&P 500)">
+                <input type="text" id="inv-plataforma" placeholder="Corretora (Ex: XTB)">
+                <input type="number" id="inv-valor" placeholder="Valor Investido (€)">
+                <button class="btn-adicionar" onclick="adicionarInvestimento()">Guardar Ativo</button>
+            </div>
+        </main>
+
+        <nav class="nav-bar">
+            <button class="nav-btn active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">Resumo</button>
+            <button class="nav-btn" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">Objetivos</button>
+            <button class="nav-btn" data-target="tab-investimentos" onclick="mudarTab('tab-investimentos')">Invest.</button>
+        </nav>
+    </div>
 
     <script>
-        let totalEntradas = 2100.00;
-        let totalSaidas = 850.00;
+        // --- BASE DE DADOS (LocalStorage) ---
+        let registos = JSON.parse(localStorage.getItem('fin_registos')) || [];
+        let objetivos = JSON.parse(localStorage.getItem('fin_objetivos')) || [];
+        let investimentos = JSON.parse(localStorage.getItem('fin_investimentos')) || [];
+
+        // Definição das cores por categoria
+        const cores = {
+            'Alimentação': '#ff9500',
+            'Transporte': '#5ac8fa',
+            'Carro': '#8e8e93',
+            'Casa': '#af52de',
+            'Lazer': '#ff2d55',
+            'Disponível': '#34c759'
+        };
+
+        const catSaida = ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Lazer'];
+        const catEntrada = ['Salário', 'Recibos Verdes / Serviços', 'Investimentos', 'Outros'];
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = function() {
+            const hoje = new Date();
+            const mesFormatado = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filtro-mes').value = mesFormatado;
+            
+            atualizarCategorias();
+            renderizarEcra();
+            renderizarObjetivos();
+            renderizarInvestimentos();
+        };
 
         function mudarTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.nav-btn[data-target="${tabId}"]`).classList.add('active');
         }
 
-        const categoriasSaida = ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Lazer'];
-        const categoriasEntrada = ['Salário', 'Recibos Verdes / Serviços', 'Investimentos', 'Outros'];
-
         function atualizarCategorias() {
             const tipo = document.getElementById('tipo-registo').value;
-            const selectCat = document.getElementById('categoria-registo');
-            selectCat.innerHTML = '';
-            const lista = tipo === 'saida' ? categoriasSaida : categoriasEntrada;
+            const select = document.getElementById('categoria-registo');
+            select.innerHTML = '';
+            const lista = tipo === 'saida' ? catSaida : catEntrada;
             lista.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.innerText = cat;
-                selectCat.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = cat; opt.innerText = cat;
+                select.appendChild(opt);
             });
         }
-        
-        let chart;
-        function inicializarGrafico() {
+
+        // --- LÓGICA DO RESUMO MENSAL ---
+        let chart = null;
+
+        function renderizarEcra() {
+            const mesSelecionado = document.getElementById('filtro-mes').value; // Ex: "2026-10"
+            let totalEntradas = 0;
+            let totalSaidas = 0;
+            let dadosCategorias = {}; // Para agrupar valores por categoria para o gráfico
+
+            // Inicializar contadores de categorias
+            catSaida.forEach(c => dadosCategorias[c] = 0);
+
+            // Filtrar os registos pelo mês escolhido
+            registos.forEach(reg => {
+                if(reg.mes === mesSelecionado) {
+                    if(reg.tipo === 'entrada') {
+                        totalEntradas += reg.valor;
+                    } else {
+                        totalSaidas += reg.valor;
+                        if(dadosCategorias[reg.categoria] !== undefined) {
+                            dadosCategorias[reg.categoria] += reg.valor;
+                        }
+                    }
+                }
+            });
+
+            const saldo = totalEntradas - totalSaidas;
+            document.getElementById('display-entradas').innerText = totalEntradas.toFixed(2) + ' €';
+            document.getElementById('display-saidas').innerText = totalSaidas.toFixed(2) + ' €';
+            document.getElementById('display-saldo').innerText = saldo.toFixed(2) + ' €';
+
+            atualizarGrafico(totalEntradas, totalSaidas, dadosCategorias);
+        }
+
+        function atualizarGrafico(entradas, saidas, dadosCategorias) {
             const ctx = document.getElementById('graficoBalanco').getContext('2d');
-            const disponivel = Math.max(0, totalEntradas - totalSaidas);
+            const disponivel = Math.max(0, entradas - saidas);
+            
+            // Preparar dados para o gráfico com as respetivas cores
+            let labels = [];
+            let valores = [];
+            let coresFundo = [];
+
+            // Adicionar fatias das despesas (apenas as que têm valor > 0)
+            for (let cat in dadosCategorias) {
+                if (dadosCategorias[cat] > 0) {
+                    labels.push(cat);
+                    valores.push(dadosCategorias[cat]);
+                    coresFundo.push(cores[cat] || '#000000');
+                }
+            }
+
+            // Adicionar a fatia "Livre/Disponível"
+            labels.push('Disponível');
+            valores.push(disponivel);
+            coresFundo.push(cores['Disponível']);
+
+            if (chart) chart.destroy();
+
             chart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Despesas', 'Disponível'],
+                    labels: labels,
                     datasets: [{
-                        data: [totalSaidas, disponivel],
-                        backgroundColor: ['#ff3b30', '#34c759'],
-                        borderWidth: 0
+                        data: valores,
+                        backgroundColor: coresFundo,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: { legend: { position: 'bottom' } }
+                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
                 }
             });
-        }
-
-        function atualizarValoresNoEcra() {
-            document.getElementById('display-entradas').innerText = totalEntradas.toFixed(2) + ' €';
-            document.getElementById('display-saidas').innerText = totalSaidas.toFixed(2) + ' €';
-            const saldo = totalEntradas - totalSaidas;
-            document.getElementById('display-saldo').innerText = saldo.toFixed(2) + ' €';
-            if (chart) {
-                chart.data.datasets[0].data = [totalSaidas, Math.max(0, totalEntradas - totalSaidas)];
-                chart.update();
-            }
         }
 
         function adicionarRegisto() {
             const valor = parseFloat(document.getElementById('valor-registo').value);
             const tipo = document.getElementById('tipo-registo').value;
-            if (isNaN(valor) || valor <= 0) {
-                alert("Por favor, insere um valor válido.");
-                return;
-            }
-            if (tipo === 'saida') totalSaidas += valor;
-            else totalEntradas += valor;
+            const categoria = document.getElementById('categoria-registo').value;
+            const mes = document.getElementById('filtro-mes').value;
+
+            if (isNaN(valor) || valor <= 0) return alert("Valor inválido.");
+
+            registos.push({ mes, tipo, categoria, valor });
+            localStorage.setItem('fin_registos', JSON.stringify(registos));
             
-            atualizarValoresNoEcra();
             document.getElementById('valor-registo').value = '';
+            renderizarEcra();
         }
 
-        function simularImportacaoCGD() {
-            alert("A importação será ativada quando conectares o ficheiro CSV da CGD.");
+        // --- LÓGICA DE OBJETIVOS ---
+        function mostrarFormObjetivo() { document.getElementById('form-objetivo').style.display = 'block'; }
+
+        function adicionarObjetivo() {
+            const nome = document.getElementById('obj-nome').value;
+            const alvo = parseFloat(document.getElementById('obj-alvo').value);
+            if (!nome || isNaN(alvo) || alvo <= 0) return alert("Preenche os campos corretamente.");
+            
+            objetivos.push({ id: Date.now(), nome, alvo, atual: 0 });
+            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos));
+            document.getElementById('obj-nome').value = '';
+            document.getElementById('obj-alvo').value = '';
+            document.getElementById('form-objetivo').style.display = 'none';
+            renderizarObjetivos();
         }
 
-        window.onload = function() {
-            atualizarCategorias();
-            inicializarGrafico();
-            atualizarValoresNoEcra();
-            const dataUltimoAcesso = localStorage.getItem('ultimoAcessoGestao');
-            const hoje = new Date().toDateString();
-            if (dataUltimoAcesso !== hoje) {
-                setTimeout(() => {
-                    alert("Não te esqueças de registar os teus gastos de hoje!");
-                    localStorage.setItem('ultimoAcessoGestao', hoje);
-                }, 1000);
-            }
-        };
+        function alterarValorObjetivo(id, operacao) {
+            const quantia = parseFloat(prompt(operacao === '+' ? "Quanto queres adicionar ao objetivo?" : "Quanto queres retirar?"));
+            if (isNaN(quantia) || quantia <= 0) return;
 
-        let toqueInicioX = 0;
-        let toqueFimX = 0;
-        document.body.addEventListener('touchstart', e => { toqueInicioX = e.changedTouches[0].screenX; });
-        document.body.addEventListener('touchend', e => { 
-            toqueFimX = e.changedTouches[0].screenX; 
-            const minSwipeDistance = 50; 
-            const tabs = ['tab-resumo', 'tab-objetivos', 'tab-investimentos'];
-            let indiceAtual = tabs.indexOf(document.querySelector('.tab-content.active').id);
-            if (toqueFimX < toqueInicioX - minSwipeDistance && indiceAtual < 2) mudarTab(tabs[indiceAtual + 1]);
-            if (toqueFimX > toqueInicioX + minSwipeDistance && indiceAtual > 0) mudarTab(tabs[indiceAtual - 1]);
-        });
+            const obj = objetivos.find(o => o.id === id);
+            if (operacao === '+') obj.atual += quantia;
+            else obj.atual = Math.max(0, obj.atual - quantia);
+
+            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos));
+            renderizarObjetivos();
+        }
+
+        function renderizarObjetivos() {
+            const container = document.getElementById('lista-objetivos');
+            container.innerHTML = '';
+            objetivos.forEach(obj => {
+                const percentagem = Math.min(100, (obj.atual / obj.alvo) * 100);
+                container.innerHTML += `
+                    <div class="objetivo-card">
+                        <div class="objetivo-header">
+                            <span>${obj.nome}</span>
+                            <span>${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentagem}%"></div>
+                        </div>
+                        <div class="acoes-obj">
+                            <button class="btn-obj btn-obj-rem" onclick="alterarValorObjetivo(${obj.id}, '-')">- Retirar</button>
+                            <button class="btn-obj btn-obj-add" onclick="alterarValorObjetivo(${obj.id}, '+')">+ Adicionar</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // --- LÓGICA DE INVESTIMENTOS ---
+        function mostrarFormInvestimento() { document.getElementById('form-investimento').style.display = 'block'; }
+
+        function adicionarInvestimento() {
+            const nome = document.getElementById('inv-nome').value;
+            const plat = document.getElementById('inv-plataforma').value;
+            const valor = parseFloat(document.getElementById('inv-valor').value);
+            
+            if (!nome || !plat || isNaN(valor) || valor <= 0) return alert("Preenche os campos corretamente.");
+            
+            investimentos.push({ nome, plataforma: plat, valor });
+            localStorage.setItem('fin_investimentos', JSON.stringify(investimentos));
+            
+            document.getElementById('inv-nome').value = '';
+            document.getElementById('inv-plataforma').value = '';
+            document.getElementById('inv-valor').value = '';
+            document.getElementById('form-investimento').style.display = 'none';
+            renderizarInvestimentos();
+        }
+
+        function renderizarInvestimentos() {
+            const container = document.getElementById('lista-investimentos');
+            container.innerHTML = '';
+            let total = 0;
+            
+            investimentos.forEach(inv => {
+                total += inv.valor;
+                container.innerHTML += `
+                    <div class="investimento-item">
+                        <div class="inv-info">
+                            <strong>${inv.nome}</strong>
+                            <span class="inv-ticker">${inv.plataforma}</span>
+                        </div>
+                        <div class="inv-valor">${inv.valor.toFixed(2)} €</div>
+                    </div>`;
+            });
+            document.getElementById('display-investido').innerText = total.toFixed(2) + ' €';
+        }
     </script>
 </body>
 </html>
