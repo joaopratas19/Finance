@@ -25,7 +25,6 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            /* Padding inferior grande para que o scroll natural nunca fique escondido pela barra de navegação */
             padding-bottom: calc(100px + env(safe-area-inset-bottom));
             -webkit-tap-highlight-color: transparent;
         }
@@ -55,158 +54,72 @@
             outline: none;
         }
 
-        /* NAVEGAÇÃO DE TABS */
         .tab-content { display: none; animation: fadeUp 0.3s ease-out; }
         .tab-content.active { display: block; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* RESUMO - GRÁFICO E BALANÇO */
-        .balance-container {
-            text-align: center;
-            padding: 25px 20px 10px 20px;
-        }
+        .balance-container { text-align: center; padding: 25px 20px 10px 20px; }
         .balance-label { font-size: 14px; color: var(--text-sec); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
         .balance-amount { font-size: 42px; font-weight: 800; margin-top: 5px; letter-spacing: -1px; }
 
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            height: 280px;
-            padding: 0 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+        .chart-wrapper { position: relative; width: 100%; height: 280px; padding: 0 20px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
 
-        .summary-cards {
-            display: flex;
-            gap: 15px;
-            padding: 0 20px;
-            margin-bottom: 30px;
-        }
-        .s-card {
-            flex: 1;
-            background: var(--light-gray);
-            padding: 15px;
-            border-radius: 16px;
-            text-align: center;
-        }
+        .summary-cards { display: flex; gap: 15px; padding: 0 20px; margin-bottom: 30px; }
+        .s-card { flex: 1; background: var(--light-gray); padding: 15px; border-radius: 16px; text-align: center; }
         .s-card span { display: block; font-size: 13px; color: var(--text-sec); margin-bottom: 4px; }
         .s-card strong { font-size: 18px; font-weight: 700; }
         .text-green { color: var(--green); }
         .text-red { color: var(--red); }
 
         /* FORMULÁRIO RÁPIDO */
-        .quick-add-section {
-            padding: 0 20px;
-            margin-bottom: 30px;
-        }
+        .quick-add-section { padding: 0 20px; margin-bottom: 30px; }
         .quick-add-section h3 { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
         
-        .type-toggle {
-            display: flex;
-            background: var(--light-gray);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 15px;
-        }
-        .toggle-btn {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 10px;
-            color: var(--text-sec);
-            background: transparent;
-            border: none;
-            transition: all 0.2s;
-        }
+        .type-toggle { display: flex; background: var(--light-gray); border-radius: 12px; padding: 4px; margin-bottom: 15px; }
+        .toggle-btn { flex: 1; padding: 10px; text-align: center; font-weight: 600; font-size: 14px; border-radius: 10px; color: var(--text-sec); background: transparent; border: none; transition: all 0.2s; }
         .toggle-btn.active-expense { background: var(--bg-color); color: var(--red); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .toggle-btn.active-income { background: var(--bg-color); color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        .input-group select, .input-group input {
-            width: 100%;
-            background: var(--light-gray);
-            border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            outline: none;
-            -webkit-appearance: none;
-        }
+        .input-group select, .input-group input { width: 100%; background: var(--light-gray); border: 1px solid var(--border); padding: 16px; border-radius: 14px; font-size: 16px; margin-bottom: 10px; outline: none; -webkit-appearance: none; }
+        .btn-submit { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; margin-top: 5px; cursor: pointer;}
+
+        /* EXTRATO (NOVO) E SWIPE-TO-DELETE */
+        .extrato-section { padding: 20px; }
+        .lista-movimentos-container { background: var(--bg-color); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
         
-        .btn-submit {
-            width: 100%;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            margin-top: 5px;
-        }
+        .swipe-container { position: relative; border-bottom: 1px solid var(--border); background: var(--red); }
+        .swipe-container:last-child { border-bottom: none; }
+        
+        .swipe-action { position: absolute; top: 0; right: 0; bottom: 0; width: 80px; background-color: var(--red); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; cursor: pointer; }
+        
+        .swipe-content { position: relative; background: var(--bg-color); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 2; width: 100%; }
+        
+        .mov-info-cat { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .mov-info-tipo { font-size: 13px; color: var(--text-sec); }
+        .mov-valor { font-size: 17px; font-weight: 700; }
 
         /* OBJETIVOS */
         .goals-section { padding: 20px; }
-        .goal-card {
-            background: var(--light-gray);
-            border: 1px solid var(--border);
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 15px;
-        }
+        .goal-card { background: var(--light-gray); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 15px; }
         .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .goal-title { font-size: 18px; font-weight: 700; }
         .goal-amounts { font-size: 14px; color: var(--text-sec); font-weight: 500; }
-        
         .progress-track { background: var(--border); height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 15px; }
         .progress-fill { background: var(--accent); height: 100%; border-radius: 5px; transition: width 0.4s ease; }
-        
         .goal-actions { display: flex; gap: 10px; }
-        .btn-goal {
-            flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; background: var(--bg-color); border: 1px solid var(--border);
-        }
+        .btn-goal { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; background: var(--bg-color); border: 1px solid var(--border); }
 
         /* MENU INFERIOR FIXO */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            padding-bottom: env(safe-area-inset-bottom);
-            z-index: 100;
-        }
-        
-        .nav-item {
-            flex: 1;
-            padding: 15px 0;
-            text-align: center;
-            color: var(--text-sec);
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            background: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+        .nav-item { flex: 1; padding: 15px 0; text-align: center; color: var(--text-sec); font-size: 12px; font-weight: 600; border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-item.active { color: var(--accent); }
         .nav-icon { font-size: 22px; }
     </style>
 </head>
 <body>
 
-    <!-- CABEÇALHO SUPERIOR -->
+    <!-- CABEÇALHO -->
     <header class="header">
         <h1>Gestão</h1>
         <input type="month" id="filtro-mes" class="month-selector" onchange="renderApp()">
@@ -214,35 +127,24 @@
 
     <!-- SEPARADOR 1: RESUMO -->
     <main id="tab-resumo" class="tab-content active">
-        
         <div class="balance-container">
             <div class="balance-label">Saldo Mensal</div>
             <div class="balance-amount" id="display-saldo">0,00 €</div>
         </div>
 
-        <div class="chart-wrapper">
-            <canvas id="mainChart"></canvas>
-        </div>
+        <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
 
         <div class="summary-cards">
-            <div class="s-card">
-                <span>Entradas</span>
-                <strong class="text-green" id="display-entradas">0,00 €</strong>
-            </div>
-            <div class="s-card">
-                <span>Saídas</span>
-                <strong class="text-red" id="display-saidas">0,00 €</strong>
-            </div>
+            <div class="s-card"><span>Entradas</span><strong class="text-green" id="display-entradas">0,00 €</strong></div>
+            <div class="s-card"><span>Saídas</span><strong class="text-red" id="display-saidas">0,00 €</strong></div>
         </div>
 
         <div class="quick-add-section">
             <h3>Novo Registo</h3>
-            
             <div class="type-toggle">
                 <button id="btn-saida" class="toggle-btn active-expense" onclick="setTipo('saida')">Despesa</button>
                 <button id="btn-entrada" class="toggle-btn" onclick="setTipo('entrada')">Rendimento</button>
             </div>
-
             <div class="input-group">
                 <input type="hidden" id="tipo-registo" value="saida">
                 <select id="categoria-registo"></select>
@@ -250,16 +152,28 @@
                 <button class="btn-submit" onclick="adicionarRegisto()">Guardar</button>
             </div>
         </div>
-
     </main>
 
-    <!-- SEPARADOR 2: OBJETIVOS -->
+    <!-- SEPARADOR 2: EXTRATO (NOVO) -->
+    <main id="tab-extrato" class="tab-content">
+        <div class="extrato-section">
+            <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 10px;">Extrato Mensal</h3>
+            <p style="font-size: 13px; color: var(--text-sec); margin-bottom: 20px;">Desliza um registo para a esquerda para o eliminares.</p>
+            
+            <div class="lista-movimentos-container" id="lista-movimentos">
+                <!-- Registos vão aparecer aqui -->
+            </div>
+            <div id="extrato-vazio" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-sec); font-size: 15px;">
+                Sem movimentos registados neste mês.
+            </div>
+        </div>
+    </main>
+
+    <!-- SEPARADOR 3: OBJETIVOS -->
     <main id="tab-objetivos" class="tab-content">
         <div class="goals-section">
             <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 20px;">Os Meus Objetivos</h3>
-            
             <div id="lista-objetivos"></div>
-            
             <button class="btn-submit" style="background: var(--light-gray); color: var(--text-main); border: 1px dashed var(--text-sec);" onclick="mostrarFormObjetivo()">+ Criar Novo Objetivo</button>
             
             <div id="form-objetivo" style="display: none; margin-top: 15px;" class="input-group">
@@ -270,29 +184,31 @@
         </div>
     </main>
 
-    <!-- MENU INFERIOR FIXO -->
+    <!-- MENU INFERIOR FIXO (AGORA COM 3 BOTÕES) -->
     <nav class="bottom-nav">
         <button class="nav-item active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">
-            <span class="nav-icon">◉</span>
-            Resumo
+            <span class="nav-icon">◉</span> Resumo
+        </button>
+        <button class="nav-item" data-target="tab-extrato" onclick="mudarTab('tab-extrato')">
+            <span class="nav-icon">☰</span> Extrato
         </button>
         <button class="nav-item" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">
-            <span class="nav-icon">◎</span>
-            Objetivos
+            <span class="nav-icon">◎</span> Objetivos
         </button>
     </nav>
 
     <script>
-        // BASE DE DADOS
+        // BASE DE DADOS E MIGRAÇÃO (Garante que os registos antigos têm um ID para poderem ser apagados)
         let registos = JSON.parse(localStorage.getItem('fin_registos')) || [];
+        registos.forEach(r => { if(!r.id) r.id = Date.now() + Math.floor(Math.random() * 1000); });
+        localStorage.setItem('fin_registos', JSON.stringify(registos));
+
         let objetivos = JSON.parse(localStorage.getItem('fin_objetivos')) || [];
 
-        // CONFIGURAÇÕES
         const categorias = {
             'saida': ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Saúde', 'Lazer', 'Outros'],
             'entrada': ['Salário', 'Recibos Verdes', 'Serviços', 'Reembolsos', 'Outros']
         };
-
         const coresGrafico = ['#ff3b30', '#ff9500', '#ffcc00', '#5ac8fa', '#5856d6', '#ff2d55', '#8e8e93'];
 
         // ARRANQUE
@@ -312,19 +228,14 @@
             document.querySelector(`.nav-item[data-target="${tabId}"]`).classList.add('active');
         }
 
-        // FORMULÁRIO DE REGISTO (Toggle Despesa/Rendimento)
+        // FORMULÁRIO DE REGISTO
         function setTipo(tipo) {
             document.getElementById('tipo-registo').value = tipo;
             const btnSaida = document.getElementById('btn-saida');
             const btnEntrada = document.getElementById('btn-entrada');
             
-            if (tipo === 'saida') {
-                btnSaida.className = 'toggle-btn active-expense';
-                btnEntrada.className = 'toggle-btn';
-            } else {
-                btnEntrada.className = 'toggle-btn active-income';
-                btnSaida.className = 'toggle-btn';
-            }
+            if (tipo === 'saida') { btnSaida.className = 'toggle-btn active-expense'; btnEntrada.className = 'toggle-btn'; } 
+            else { btnEntrada.className = 'toggle-btn active-income'; btnSaida.className = 'toggle-btn'; }
             atualizarDropdownCategorias();
         }
 
@@ -332,98 +243,65 @@
             const tipo = document.getElementById('tipo-registo').value;
             const select = document.getElementById('categoria-registo');
             select.innerHTML = '';
-            categorias[tipo].forEach(cat => {
-                select.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
+            categorias[tipo].forEach(cat => { select.innerHTML += `<option value="${cat}">${cat}</option>`; });
         }
 
-        // MOTOR PRINCIPAL DO RESUMO E GRÁFICO
+        // MOTOR PRINCIPAL
         let chart = null;
 
         function renderApp() {
             const mes = document.getElementById('filtro-mes').value;
             let ent = 0, sai = 0;
             let despesasPorCategoria = {};
-
-            // Inicializar array de categorias de saída a 0
             categorias['saida'].forEach(c => despesasPorCategoria[c] = 0);
 
-            // Calcular totais
-            registos.forEach(reg => {
-                if(reg.mes === mes) {
-                    if(reg.tipo === 'entrada') {
-                        ent += reg.valor;
-                    } else {
-                        sai += reg.valor;
-                        if(despesasPorCategoria[reg.categoria] !== undefined) {
-                            despesasPorCategoria[reg.categoria] += reg.valor;
-                        }
-                    }
+            // Filtrar registos do mês
+            let registosDoMes = registos.filter(r => r.mes === mes);
+
+            registosDoMes.forEach(reg => {
+                if(reg.tipo === 'entrada') ent += reg.valor;
+                else {
+                    sai += reg.valor;
+                    if(despesasPorCategoria[reg.categoria] !== undefined) despesasPorCategoria[reg.categoria] += reg.valor;
                 }
             });
 
-            const saldo = ent - sai;
-
-            // Atualizar textos no ecrã
             document.getElementById('display-entradas').innerText = ent.toFixed(2) + ' €';
             document.getElementById('display-saidas').innerText = sai.toFixed(2) + ' €';
-            document.getElementById('display-saldo').innerText = saldo.toFixed(2) + ' €';
+            document.getElementById('display-saldo').innerText = (ent - sai).toFixed(2) + ' €';
 
-            // Atualizar Gráfico (Estilo Monefy)
+            renderExtrato(registosDoMes); // Atualizar a lista do extrato
+            atualizarGrafico(despesasPorCategoria);
+        }
+
+        function atualizarGrafico(despesasPorCategoria) {
             const ctx = document.getElementById('mainChart').getContext('2d');
-            let chartLabels = [];
-            let chartData = [];
-            let chartColors = [];
-            let colorIndex = 0;
+            let chartLabels = [], chartData = [], chartColors = [], colorIndex = 0;
 
-            // Preencher dados do gráfico apenas com despesas > 0
             for (let cat in despesasPorCategoria) {
                 if (despesasPorCategoria[cat] > 0) {
-                    chartLabels.push(cat);
-                    chartData.push(despesasPorCategoria[cat]);
-                    chartColors.push(coresGrafico[colorIndex % coresGrafico.length]);
-                    colorIndex++;
+                    chartLabels.push(cat); chartData.push(despesasPorCategoria[cat]);
+                    chartColors.push(coresGrafico[colorIndex % coresGrafico.length]); colorIndex++;
                 }
             }
 
-            // Se não houver despesas, mostrar um anel cinzento neutro
-            if (chartData.length === 0) {
-                chartLabels = ['Sem dados'];
-                chartData = [1];
-                chartColors = ['#f0f0f0'];
-            }
-
+            if (chartData.length === 0) { chartLabels = ['Sem dados']; chartData = [1]; chartColors = ['#f0f0f0']; }
             if (chart) chart.destroy();
             
             chart = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: chartLabels,
-                    datasets: [{
-                        data: chartData,
-                        backgroundColor: chartColors,
-                        borderWidth: 3,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12, family: '-apple-system' } } },
-                        tooltip: { callbacks: { label: function(context) { return context.label === 'Sem dados' ? '' : ' ' + context.parsed + ' €'; } } }
-                    }
-                }
+                data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartColors, borderWidth: 3, borderColor: '#ffffff' }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12, family: '-apple-system' } } }, tooltip: { callbacks: { label: function(c) { return c.label === 'Sem dados' ? '' : ' ' + c.parsed + ' €'; } } } } }
             });
         }
 
-        // GUARDAR NOVO REGISTO
+        // GESTÃO DE DADOS
         function adicionarRegisto() {
             const valor = parseFloat(document.getElementById('valor-registo').value);
             if (isNaN(valor) || valor <= 0) return alert("Por favor, insere um valor válido.");
             
             registos.push({
+                id: Date.now(), // ID único para podermos eliminar
                 mes: document.getElementById('filtro-mes').value,
                 tipo: document.getElementById('tipo-registo').value,
                 categoria: document.getElementById('categoria-registo').value,
@@ -432,11 +310,80 @@
             
             localStorage.setItem('fin_registos', JSON.stringify(registos));
             document.getElementById('valor-registo').value = '';
-            
-            // Feedback visual no iOS (recolher teclado focando noutro lado e depois tirando o foco)
-            document.getElementById('valor-registo').blur();
+            document.getElementById('valor-registo').blur(); // Fecha o teclado no iOS
             
             renderApp();
+            mudarTab('tab-extrato'); // Opcional: Salta para o extrato para ver o que acabou de adicionar
+        }
+
+        function eliminarRegisto(id) {
+            registos = registos.filter(r => r.id !== id);
+            localStorage.setItem('fin_registos', JSON.stringify(registos));
+            renderApp(); // Atualiza tudo (Gráfico, Resumo e Extrato)
+        }
+
+        // RENDERIZAR EXTRATO COM SWIPE TO DELETE
+        function renderExtrato(registosMes) {
+            const container = document.getElementById('lista-movimentos');
+            const placeholder = document.getElementById('extrato-vazio');
+            
+            container.innerHTML = '';
+            
+            if(registosMes.length === 0) {
+                container.style.display = 'none';
+                placeholder.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'block';
+            placeholder.style.display = 'none';
+
+            // Inverter a lista para os mais recentes (adicionados em último) aparecerem no topo
+            [...registosMes].reverse().forEach(reg => {
+                const sinal = reg.tipo === 'entrada' ? '+' : '-';
+                const corClasse = reg.tipo === 'entrada' ? 'text-green' : 'text-red';
+                const tipoTexto = reg.tipo === 'entrada' ? 'Rendimento' : 'Despesa';
+
+                container.innerHTML += `
+                    <div class="swipe-container" id="mov-${reg.id}">
+                        <div class="swipe-action" onclick="eliminarRegisto(${reg.id})">Apagar</div>
+                        <div class="swipe-content">
+                            <div class="mov-info">
+                                <div class="mov-info-cat">${reg.categoria}</div>
+                                <div class="mov-info-tipo">${tipoTexto}</div>
+                            </div>
+                            <div class="mov-valor ${corClasse}">${sinal} ${reg.valor.toFixed(2)} €</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            iniciarSwipe();
+        }
+
+        // LÓGICA DO SWIPE
+        let openElement = null;
+        function iniciarSwipe() {
+            const items = document.querySelectorAll('.swipe-content');
+            items.forEach(el => {
+                let startX = 0;
+                el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+                
+                el.addEventListener('touchend', e => {
+                    let endX = e.changedTouches[0].clientX;
+                    // Deslizou para a esquerda (Abrir o Apagar)
+                    if (startX - endX > 40) {
+                        if(openElement && openElement !== el) openElement.style.transform = 'translateX(0)';
+                        el.style.transform = 'translateX(-80px)';
+                        openElement = el;
+                    } 
+                    // Deslizou para a direita (Fechar o Apagar)
+                    else if (endX - startX > 40) {
+                        el.style.transform = 'translateX(0)';
+                        if(openElement === el) openElement = null;
+                    }
+                });
+            });
         }
 
         // LÓGICA DE OBJETIVOS
@@ -449,43 +396,28 @@
             const nome = document.getElementById('obj-nome').value;
             const alvo = parseFloat(document.getElementById('obj-alvo').value);
             if (!nome || isNaN(alvo) || alvo <= 0) return;
-            
             objetivos.push({ id: Date.now(), nome: nome, alvo: alvo, atual: 0 });
             localStorage.setItem('fin_objetivos', JSON.stringify(objetivos));
-            
-            document.getElementById('obj-nome').value = ''; 
-            document.getElementById('obj-alvo').value = '';
-            document.getElementById('form-objetivo').style.display = 'none'; 
-            
-            renderObjetivos();
+            document.getElementById('obj-nome').value = ''; document.getElementById('obj-alvo').value = '';
+            document.getElementById('form-objetivo').style.display = 'none'; renderObjetivos();
         }
 
         function gerirObjetivo(id, operacao) {
             const quantia = parseFloat(prompt(operacao === '+' ? "Valor a depositar neste objetivo (€):" : "Valor a retirar deste objetivo (€):"));
             if (isNaN(quantia) || quantia <= 0) return;
-            
             const obj = objetivos.find(o => o.id === id);
             obj.atual = operacao === '+' ? obj.atual + quantia : Math.max(0, obj.atual - quantia);
-            
-            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos)); 
-            renderObjetivos();
+            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos)); renderObjetivos();
         }
 
         function renderObjetivos() {
-            const container = document.getElementById('lista-objetivos');
-            container.innerHTML = '';
-            
+            const container = document.getElementById('lista-objetivos'); container.innerHTML = '';
             objetivos.forEach(obj => {
                 const perc = Math.min(100, (obj.atual / obj.alvo) * 100);
                 container.innerHTML += `
                     <div class="goal-card">
-                        <div class="goal-header">
-                            <span class="goal-title">${obj.nome}</span>
-                            <span class="goal-amounts">${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: ${perc}%"></div>
-                        </div>
+                        <div class="goal-header"><span class="goal-title">${obj.nome}</span><span class="goal-amounts">${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span></div>
+                        <div class="progress-track"><div class="progress-fill" style="width: ${perc}%"></div></div>
                         <div class="goal-actions">
                             <button class="btn-goal text-red" onclick="gerirObjetivo(${obj.id}, '-')">- Retirar</button>
                             <button class="btn-goal text-green" onclick="gerirObjetivo(${obj.id}, '+')">+ Depositar</button>
