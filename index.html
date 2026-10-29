@@ -2,385 +2,496 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <!-- Adicionado viewport-fit=cover para respeitar o ecrã inteiro do iPhone -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gestão">
-    <title>Gestão Financeira Pessoal</title>
+    <title>Gestão Financeira</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #ffffff;
-            --bg-app: #f2f2f7; /* Cor de fundo nativa do iOS */
-            --text-main: #1c1c1e;
-            --text-sec: #8e8e93;
-            --primary: #007aff; /* Azul iOS */
+            --text-main: #000000;
+            --text-sec: #888888;
+            --accent: #000000;
             --red: #ff3b30;
             --green: #34c759;
-            --light-gray: #f2f2f7;
-            --border: #e5e5ea;
-            --card-bg: #ffffff;
+            --light-gray: #f9f9f9;
+            --border: #eeeeee;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
-        /* O truque para não haver scroll na página inteira, apenas dentro da app */
-        html, body { height: 100%; overflow: hidden; background-color: var(--bg-app); display: flex; justify-content: center; }
-        
-        .app-wrapper {
-            width: 100%;
-            max-width: 430px;
-            height: 100dvh; /* Usa a altura real do ecrã do telemóvel */
+        body {
             background-color: var(--bg-color);
-            display: flex;
-            flex-direction: column; /* Divide a app em Cima, Meio (scroll), Baixo */
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            position: relative;
+            color: var(--text-main);
+            /* Padding inferior grande para que o scroll natural nunca fique escondido pela barra de navegação */
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 1. CABEÇALHO (Fixo no topo) */
+        /* CABEÇALHO */
         .header {
-            flex-shrink: 0;
-            padding: max(20px, env(safe-area-inset-top)) 20px 10px 20px;
+            padding: max(20px, env(safe-area-inset-top)) 20px 15px 20px;
             background: var(--bg-color);
-            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid var(--border);
-            z-index: 10;
         }
         
-        .header h1 { font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .header h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
         
         .month-selector {
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: none;
-            font-size: 15px;
+            background: var(--light-gray);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
             font-weight: 600;
-            background-color: var(--light-gray);
-            color: var(--primary);
+            outline: none;
+        }
+
+        /* NAVEGAÇÃO DE TABS */
+        .tab-content { display: none; animation: fadeUp 0.3s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* RESUMO - GRÁFICO E BALANÇO */
+        .balance-container {
+            text-align: center;
+            padding: 25px 20px 10px 20px;
+        }
+        .balance-label { font-size: 14px; color: var(--text-sec); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 42px; font-weight: 800; margin-top: 5px; letter-spacing: -1px; }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .summary-cards {
+            display: flex;
+            gap: 15px;
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+        .s-card {
+            flex: 1;
+            background: var(--light-gray);
+            padding: 15px;
+            border-radius: 16px;
             text-align: center;
         }
+        .s-card span { display: block; font-size: 13px; color: var(--text-sec); margin-bottom: 4px; }
+        .s-card strong { font-size: 18px; font-weight: 700; }
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
 
-        /* 2. ÁREA DE CONTEÚDO (Onde fazes scroll) */
-        .scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            background-color: var(--bg-app);
-            -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+        /* FORMULÁRIO RÁPIDO */
+        .quick-add-section {
+            padding: 0 20px;
+            margin-bottom: 30px;
         }
-
-        .tab-content { display: none; animation: fadeIn 0.2s ease; }
-        .tab-content.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilos dos Cartões */
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .card { padding: 12px; border-radius: 14px; background: var(--card-bg); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .card-saldo { grid-column: span 2; background: #000; color: white; padding: 15px;}
-        .card-saldo span { font-size: 13px; opacity: 0.8; }
-        .card span { font-size: 12px; font-weight: 500; color: var(--text-sec); }
-        .card h3 { font-size: 16px; margin-top: 4px; }
-        .card-entrada h3 { color: var(--green); }
-        .card-saida h3 { color: var(--red); }
-        .card-saldo h3 { margin-top: 4px; font-size: 24px; font-weight: 700; color: white;}
-
-        /* Gráfico Compacto */
-        .chart-container { 
-            background: var(--card-bg); padding: 15px; border-radius: 14px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 15px;
-            height: 200px; display: flex; justify-content: center; align-items: center;
-        }
-
-        /* Formulário de Adicionar */
-        .form-container { background: var(--card-bg); padding: 15px; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .form-container h3 { font-size: 16px; margin-bottom: 12px; color: var(--text-main); }
+        .quick-add-section h3 { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
         
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .form-container select, .form-container input {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; background: var(--light-gray); outline: none;
-        }
-        
-        .btn-adicionar { width: 100%; padding: 14px; background: var(--text-main); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; }
-        .btn-secundario { background: var(--border); color: var(--text-main); margin-bottom: 10px;}
-
-        /* Objetivos & Investimentos */
-        .seccao-titulo { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
-        .objetivo-card, .investimento-item { background: var(--card-bg); padding: 15px; border-radius: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .objetivo-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; font-weight: 600; }
-        .progress-bar { background: var(--light-gray); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
-        .progress-fill { height: 100%; background-color: var(--text-main); transition: width 0.3s; }
-        
-        .acoes-obj { display: flex; gap: 10px; }
-        .btn-obj { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .btn-obj-rem { background: #ffebee; color: var(--red); }
-        .btn-obj-add { background: #e8f5e9; color: var(--green); }
-
-        .investimento-item { display: flex; justify-content: space-between; align-items: center; }
-        .inv-info strong { display: block; font-size: 16px; }
-        .inv-ticker { font-size: 13px; color: var(--text-sec); }
-        .inv-valor { font-weight: 700; font-size: 16px; text-align: right; }
-
-        /* 3. MENU INFERIOR (Fixo no fundo, com Safe Area para iPhone) */
-        .nav-bar {
-            flex-shrink: 0;
+        .type-toggle {
             display: flex;
-            background: var(--bg-color);
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 15px;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            color: var(--text-sec);
+            background: transparent;
+            border: none;
+            transition: all 0.2s;
+        }
+        .toggle-btn.active-expense { background: var(--bg-color); color: var(--red); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .toggle-btn.active-income { background: var(--bg-color); color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        .input-group select, .input-group input {
+            width: 100%;
+            background: var(--light-gray);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* OBJETIVOS */
+        .goals-section { padding: 20px; }
+        .goal-card {
+            background: var(--light-gray);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+        .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .goal-title { font-size: 18px; font-weight: 700; }
+        .goal-amounts { font-size: 14px; color: var(--text-sec); font-weight: 500; }
+        
+        .progress-track { background: var(--border); height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 15px; }
+        .progress-fill { background: var(--accent); height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+        
+        .goal-actions { display: flex; gap: 10px; }
+        .btn-goal {
+            flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; background: var(--bg-color); border: 1px solid var(--border);
+        }
+
+        /* MENU INFERIOR FIXO */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
-            padding-bottom: env(safe-area-inset-bottom); /* Espaço para o traço do iPhone */
-            z-index: 10;
+            display: flex;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100;
         }
         
-        .nav-btn {
-            flex: 1; padding: 15px 0; border: none; background: none; 
-            font-size: 12px; font-weight: 500; color: var(--text-sec); cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        .nav-item {
+            flex: 1;
+            padding: 15px 0;
+            text-align: center;
+            color: var(--text-sec);
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            background: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
-        
-        .nav-btn.active { color: var(--text-main); font-weight: 700; }
-        .nav-icon { font-size: 20px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 22px; }
     </style>
 </head>
 <body>
-    <div class="app-wrapper">
+
+    <!-- CABEÇALHO SUPERIOR -->
+    <header class="header">
+        <h1>Gestão</h1>
+        <input type="month" id="filtro-mes" class="month-selector" onchange="renderApp()">
+    </header>
+
+    <!-- SEPARADOR 1: RESUMO -->
+    <main id="tab-resumo" class="tab-content active">
         
-        <!-- CABEÇALHO -->
-        <header class="header">
-            <h1>A Minha Gestão</h1>
-            <input type="month" id="filtro-mes" class="month-selector" onchange="renderizarEcra()">
-        </header>
+        <div class="balance-container">
+            <div class="balance-label">Saldo Mensal</div>
+            <div class="balance-amount" id="display-saldo">0,00 €</div>
+        </div>
 
-        <!-- ÁREA CENTRAL DE SCROLL -->
-        <main class="scroll-area">
+        <div class="chart-wrapper">
+            <canvas id="mainChart"></canvas>
+        </div>
+
+        <div class="summary-cards">
+            <div class="s-card">
+                <span>Entradas</span>
+                <strong class="text-green" id="display-entradas">0,00 €</strong>
+            </div>
+            <div class="s-card">
+                <span>Saídas</span>
+                <strong class="text-red" id="display-saidas">0,00 €</strong>
+            </div>
+        </div>
+
+        <div class="quick-add-section">
+            <h3>Novo Registo</h3>
             
-            <!-- SEPARADOR RESUMO -->
-            <div id="tab-resumo" class="tab-content active">
-                <div class="dashboard">
-                    <div class="card card-entrada">
-                        <span>Entradas</span>
-                        <h3 id="display-entradas">0,00 €</h3>
-                    </div>
-                    <div class="card card-saida">
-                        <span>Saídas</span>
-                        <h3 id="display-saidas">0,00 €</h3>
-                    </div>
-                    <div class="card card-saldo">
-                        <span>Saldo Mensal</span>
-                        <h3 id="display-saldo">0,00 €</h3>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="graficoBalanco"></canvas>
-                </div>
-
-                <div class="form-container">
-                    <h3>Adicionar Registo</h3>
-                    <div class="input-group">
-                        <select id="tipo-registo" onchange="atualizarCategorias()">
-                            <option value="saida">Saída (-)</option>
-                            <option value="entrada">Entrada (+)</option>
-                        </select>
-                        <select id="categoria-registo"></select>
-                    </div>
-                    <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 50.00)" step="0.01" style="margin-bottom: 10px;">
-                    <button class="btn-adicionar" onclick="adicionarRegisto()">Guardar Registo</button>
-                </div>
+            <div class="type-toggle">
+                <button id="btn-saida" class="toggle-btn active-expense" onclick="setTipo('saida')">Despesa</button>
+                <button id="btn-entrada" class="toggle-btn" onclick="setTipo('entrada')">Rendimento</button>
             </div>
 
-            <!-- SEPARADOR OBJETIVOS -->
-            <div id="tab-objetivos" class="tab-content">
-                <h2 class="seccao-titulo">Os Meus Objetivos</h2>
-                <div id="lista-objetivos"></div>
-                
-                <button class="btn-adicionar btn-secundario" onclick="mostrarFormObjetivo()">+ Criar Novo Objetivo</button>
-                
-                <div id="form-objetivo" class="form-container" style="display: none;">
-                    <input type="text" id="obj-nome" placeholder="Nome do Objetivo (Ex: Carro)" style="margin-bottom:10px;">
-                    <input type="number" id="obj-alvo" placeholder="Valor Alvo em €" style="margin-bottom:10px;">
-                    <button class="btn-adicionar" onclick="adicionarObjetivo()">Guardar Objetivo</button>
-                </div>
+            <div class="input-group">
+                <input type="hidden" id="tipo-registo" value="saida">
+                <select id="categoria-registo"></select>
+                <input type="number" id="valor-registo" placeholder="Valor em € (Ex: 25.50)" step="0.01">
+                <button class="btn-submit" onclick="adicionarRegisto()">Guardar</button>
             </div>
+        </div>
 
-            <!-- SEPARADOR INVESTIMENTOS -->
-            <div id="tab-investimentos" class="tab-content">
-                <h2 class="seccao-titulo">Portfólio</h2>
-                <div class="card card-saldo" style="margin-bottom: 15px;">
-                    <span>Total Investido</span>
-                    <h3 id="display-investido">0,00 €</h3>
-                </div>
-                
-                <div id="lista-investimentos"></div>
+    </main>
 
-                <button class="btn-adicionar btn-secundario" onclick="mostrarFormInvestimento()">+ Registar Ativo</button>
-                
-                <div id="form-investimento" class="form-container" style="display: none;">
-                    <input type="text" id="inv-nome" placeholder="Nome (Ex: S&P 500)" style="margin-bottom:10px;">
-                    <input type="text" id="inv-plataforma" placeholder="Corretora (Ex: XTB)" style="margin-bottom:10px;">
-                    <input type="number" id="inv-valor" placeholder="Valor Atual em €" style="margin-bottom:10px;">
-                    <button class="btn-adicionar" onclick="adicionarInvestimento()">Guardar Ativo</button>
-                </div>
+    <!-- SEPARADOR 2: OBJETIVOS -->
+    <main id="tab-objetivos" class="tab-content">
+        <div class="goals-section">
+            <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 20px;">Os Meus Objetivos</h3>
+            
+            <div id="lista-objetivos"></div>
+            
+            <button class="btn-submit" style="background: var(--light-gray); color: var(--text-main); border: 1px dashed var(--text-sec);" onclick="mostrarFormObjetivo()">+ Criar Novo Objetivo</button>
+            
+            <div id="form-objetivo" style="display: none; margin-top: 15px;" class="input-group">
+                <input type="text" id="obj-nome" placeholder="Para quê? (Ex: Carro Novo)">
+                <input type="number" id="obj-alvo" placeholder="Valor total necessário (€)">
+                <button class="btn-submit" onclick="adicionarObjetivo()">Guardar Objetivo</button>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <!-- MENU INFERIOR FIXO -->
-        <nav class="nav-bar">
-            <button class="nav-btn active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">
-                <span class="nav-icon">📊</span>
-                Resumo
-            </button>
-            <button class="nav-btn" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">
-                <span class="nav-icon">🎯</span>
-                Objetivos
-            </button>
-            <button class="nav-btn" data-target="tab-investimentos" onclick="mudarTab('tab-investimentos')">
-                <span class="nav-icon">📈</span>
-                Invest.
-            </button>
-        </nav>
-    </div>
+    <!-- MENU INFERIOR FIXO -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="tab-resumo" onclick="mudarTab('tab-resumo')">
+            <span class="nav-icon">◉</span>
+            Resumo
+        </button>
+        <button class="nav-item" data-target="tab-objetivos" onclick="mudarTab('tab-objetivos')">
+            <span class="nav-icon">◎</span>
+            Objetivos
+        </button>
+    </nav>
 
     <script>
-        // --- BASE DE DADOS (LocalStorage) ---
+        // BASE DE DADOS
         let registos = JSON.parse(localStorage.getItem('fin_registos')) || [];
         let objetivos = JSON.parse(localStorage.getItem('fin_objetivos')) || [];
-        let investimentos = JSON.parse(localStorage.getItem('fin_investimentos')) || [];
 
-        const cores = {
-            'Alimentação': '#ff9500', 'Transporte': '#5ac8fa', 'Carro': '#8e8e93',
-            'Casa': '#af52de', 'Lazer': '#ff2d55', 'Disponível': '#34c759'
+        // CONFIGURAÇÕES
+        const categorias = {
+            'saida': ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Saúde', 'Lazer', 'Outros'],
+            'entrada': ['Salário', 'Recibos Verdes', 'Serviços', 'Reembolsos', 'Outros']
         };
 
-        const catSaida = ['Alimentação', 'Transporte', 'Carro', 'Casa', 'Lazer'];
-        const catEntrada = ['Salário', 'Recibos Verdes', 'Serviços', 'Outros'];
+        const coresGrafico = ['#ff3b30', '#ff9500', '#ffcc00', '#5ac8fa', '#5856d6', '#ff2d55', '#8e8e93'];
 
+        // ARRANQUE
         window.onload = function() {
             const hoje = new Date();
             document.getElementById('filtro-mes').value = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
-            atualizarCategorias(); renderizarEcra(); renderizarObjetivos(); renderizarInvestimentos();
+            atualizarDropdownCategorias();
+            renderApp();
+            renderObjetivos();
         };
 
+        // NAVEGAÇÃO
         function mudarTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            document.querySelector(`.nav-btn[data-target="${tabId}"]`).classList.add('active');
+            document.querySelector(`.nav-item[data-target="${tabId}"]`).classList.add('active');
         }
 
-        function atualizarCategorias() {
+        // FORMULÁRIO DE REGISTO (Toggle Despesa/Rendimento)
+        function setTipo(tipo) {
+            document.getElementById('tipo-registo').value = tipo;
+            const btnSaida = document.getElementById('btn-saida');
+            const btnEntrada = document.getElementById('btn-entrada');
+            
+            if (tipo === 'saida') {
+                btnSaida.className = 'toggle-btn active-expense';
+                btnEntrada.className = 'toggle-btn';
+            } else {
+                btnEntrada.className = 'toggle-btn active-income';
+                btnSaida.className = 'toggle-btn';
+            }
+            atualizarDropdownCategorias();
+        }
+
+        function atualizarDropdownCategorias() {
             const tipo = document.getElementById('tipo-registo').value;
             const select = document.getElementById('categoria-registo');
             select.innerHTML = '';
-            (tipo === 'saida' ? catSaida : catEntrada).forEach(cat => {
+            categorias[tipo].forEach(cat => {
                 select.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
         }
 
+        // MOTOR PRINCIPAL DO RESUMO E GRÁFICO
         let chart = null;
 
-        function renderizarEcra() {
+        function renderApp() {
             const mes = document.getElementById('filtro-mes').value;
-            let ent = 0, sai = 0, catDados = {};
-            catSaida.forEach(c => catDados[c] = 0);
+            let ent = 0, sai = 0;
+            let despesasPorCategoria = {};
 
+            // Inicializar array de categorias de saída a 0
+            categorias['saida'].forEach(c => despesasPorCategoria[c] = 0);
+
+            // Calcular totais
             registos.forEach(reg => {
                 if(reg.mes === mes) {
-                    if(reg.tipo === 'entrada') ent += reg.valor;
-                    else { sai += reg.valor; if(catDados[reg.categoria] !== undefined) catDados[reg.categoria] += reg.valor; }
+                    if(reg.tipo === 'entrada') {
+                        ent += reg.valor;
+                    } else {
+                        sai += reg.valor;
+                        if(despesasPorCategoria[reg.categoria] !== undefined) {
+                            despesasPorCategoria[reg.categoria] += reg.valor;
+                        }
+                    }
                 }
             });
 
+            const saldo = ent - sai;
+
+            // Atualizar textos no ecrã
             document.getElementById('display-entradas').innerText = ent.toFixed(2) + ' €';
             document.getElementById('display-saidas').innerText = sai.toFixed(2) + ' €';
-            document.getElementById('display-saldo').innerText = (ent - sai).toFixed(2) + ' €';
+            document.getElementById('display-saldo').innerText = saldo.toFixed(2) + ' €';
 
-            atualizarGrafico(ent, sai, catDados);
-        }
+            // Atualizar Gráfico (Estilo Monefy)
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            let chartLabels = [];
+            let chartData = [];
+            let chartColors = [];
+            let colorIndex = 0;
 
-        function atualizarGrafico(ent, sai, catDados) {
-            const ctx = document.getElementById('graficoBalanco').getContext('2d');
-            const disponivel = Math.max(0, ent - sai);
-            
-            let lbls = [], vals = [], bg = [];
-            for (let c in catDados) if (catDados[c] > 0) { lbls.push(c); vals.push(catDados[c]); bg.push(cores[c]); }
-            lbls.push('Disponível'); vals.push(disponivel); bg.push(cores['Disponível']);
+            // Preencher dados do gráfico apenas com despesas > 0
+            for (let cat in despesasPorCategoria) {
+                if (despesasPorCategoria[cat] > 0) {
+                    chartLabels.push(cat);
+                    chartData.push(despesasPorCategoria[cat]);
+                    chartColors.push(coresGrafico[colorIndex % coresGrafico.length]);
+                    colorIndex++;
+                }
+            }
+
+            // Se não houver despesas, mostrar um anel cinzento neutro
+            if (chartData.length === 0) {
+                chartLabels = ['Sem dados'];
+                chartData = [1];
+                chartColors = ['#f0f0f0'];
+            }
 
             if (chart) chart.destroy();
+            
             chart = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: lbls, datasets: [{ data: vals, backgroundColor: bg, borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 11} } } } }
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12, family: '-apple-system' } } },
+                        tooltip: { callbacks: { label: function(context) { return context.label === 'Sem dados' ? '' : ' ' + context.parsed + ' €'; } } }
+                    }
+                }
             });
         }
 
+        // GUARDAR NOVO REGISTO
         function adicionarRegisto() {
             const valor = parseFloat(document.getElementById('valor-registo').value);
-            if (isNaN(valor) || valor <= 0) return alert("Insere um valor válido.");
+            if (isNaN(valor) || valor <= 0) return alert("Por favor, insere um valor válido.");
+            
             registos.push({
                 mes: document.getElementById('filtro-mes').value,
                 tipo: document.getElementById('tipo-registo').value,
                 categoria: document.getElementById('categoria-registo').value,
                 valor: valor
             });
+            
             localStorage.setItem('fin_registos', JSON.stringify(registos));
             document.getElementById('valor-registo').value = '';
-            renderizarEcra();
+            
+            // Feedback visual no iOS (recolher teclado focando noutro lado e depois tirando o foco)
+            document.getElementById('valor-registo').blur();
+            
+            renderApp();
         }
 
-        function mostrarFormObjetivo() { document.getElementById('form-objetivo').style.display = 'block'; }
+        // LÓGICA DE OBJETIVOS
+        function mostrarFormObjetivo() { 
+            const form = document.getElementById('form-objetivo');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+        
         function adicionarObjetivo() {
             const nome = document.getElementById('obj-nome').value;
             const alvo = parseFloat(document.getElementById('obj-alvo').value);
             if (!nome || isNaN(alvo) || alvo <= 0) return;
-            objetivos.push({ id: Date.now(), nome, alvo, atual: 0 });
+            
+            objetivos.push({ id: Date.now(), nome: nome, alvo: alvo, atual: 0 });
             localStorage.setItem('fin_objetivos', JSON.stringify(objetivos));
-            document.getElementById('obj-nome').value = ''; document.getElementById('obj-alvo').value = '';
-            document.getElementById('form-objetivo').style.display = 'none'; renderizarObjetivos();
+            
+            document.getElementById('obj-nome').value = ''; 
+            document.getElementById('obj-alvo').value = '';
+            document.getElementById('form-objetivo').style.display = 'none'; 
+            
+            renderObjetivos();
         }
 
-        function alterarValorObjetivo(id, op) {
-            const quantia = parseFloat(prompt(op === '+' ? "Adicionar quanto?" : "Retirar quanto?"));
+        function gerirObjetivo(id, operacao) {
+            const quantia = parseFloat(prompt(operacao === '+' ? "Valor a depositar neste objetivo (€):" : "Valor a retirar deste objetivo (€):"));
             if (isNaN(quantia) || quantia <= 0) return;
+            
             const obj = objetivos.find(o => o.id === id);
-            obj.atual = op === '+' ? obj.atual + quantia : Math.max(0, obj.atual - quantia);
-            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos)); renderizarObjetivos();
+            obj.atual = operacao === '+' ? obj.atual + quantia : Math.max(0, obj.atual - quantia);
+            
+            localStorage.setItem('fin_objetivos', JSON.stringify(objetivos)); 
+            renderObjetivos();
         }
 
-        function renderizarObjetivos() {
-            const container = document.getElementById('lista-objetivos'); container.innerHTML = '';
+        function renderObjetivos() {
+            const container = document.getElementById('lista-objetivos');
+            container.innerHTML = '';
+            
             objetivos.forEach(obj => {
                 const perc = Math.min(100, (obj.atual / obj.alvo) * 100);
                 container.innerHTML += `
-                    <div class="objetivo-card">
-                        <div class="objetivo-header"><span>${obj.nome}</span><span>${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span></div>
-                        <div class="progress-bar"><div class="progress-fill" style="width: ${perc}%"></div></div>
-                        <div class="acoes-obj">
-                            <button class="btn-obj btn-obj-rem" onclick="alterarValorObjetivo(${obj.id}, '-')">- Retirar</button>
-                            <button class="btn-obj btn-obj-add" onclick="alterarValorObjetivo(${obj.id}, '+')">+ Adicionar</button>
+                    <div class="goal-card">
+                        <div class="goal-header">
+                            <span class="goal-title">${obj.nome}</span>
+                            <span class="goal-amounts">${obj.atual.toFixed(2)}€ / ${obj.alvo.toFixed(2)}€</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: ${perc}%"></div>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="btn-goal text-red" onclick="gerirObjetivo(${obj.id}, '-')">- Retirar</button>
+                            <button class="btn-goal text-green" onclick="gerirObjetivo(${obj.id}, '+')">+ Depositar</button>
                         </div>
                     </div>`;
             });
-        }
-
-        function mostrarFormInvestimento() { document.getElementById('form-investimento').style.display = 'block'; }
-        function adicionarInvestimento() {
-            const nome = document.getElementById('inv-nome').value, plat = document.getElementById('inv-plataforma').value, valor = parseFloat(document.getElementById('inv-valor').value);
-            if (!nome || isNaN(valor) || valor <= 0) return;
-            investimentos.push({ nome, plataforma: plat, valor });
-            localStorage.setItem('fin_investimentos', JSON.stringify(investimentos));
-            document.getElementById('inv-nome').value = ''; document.getElementById('inv-plataforma').value = ''; document.getElementById('inv-valor').value = '';
-            document.getElementById('form-investimento').style.display = 'none'; renderizarInvestimentos();
-        }
-
-        function renderizarInvestimentos() {
-            const container = document.getElementById('lista-investimentos'); container.innerHTML = ''; let total = 0;
-            investimentos.forEach(inv => {
-                total += inv.valor;
-                container.innerHTML += `<div class="investimento-item"><div class="inv-info"><strong>${inv.nome}</strong><span class="inv-ticker">${inv.plataforma}</span></div><div class="inv-valor">${inv.valor.toFixed(2)} €</div></div>`;
-            });
-            document.getElementById('display-investido').innerText = total.toFixed(2) + ' €';
         }
     </script>
 </body>
